@@ -31,6 +31,8 @@ export interface DailyLog {
   employeeName: string;
   employeeRole: string; // 과장, 반장, 계장
   workType?: DailyLogWorkType;
+  workTitle?: string;
+  workLocation?: string;
   morningPlan: string; // 출근 보고: 오늘 할 일
   morningSubmittedAt?: string;
   eveningResult: string; // 퇴근 보고: 완성, 완료 결과 등 진행 상황

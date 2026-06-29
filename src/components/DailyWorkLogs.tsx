@@ -65,6 +65,8 @@ export default function DailyWorkLogs({
 }: DailyWorkLogsProps) {
   const [selectedDate, setSelectedDate] = useState<string>(getTodayDate());
   const [workType, setWorkType] = useState<DailyLogWorkType>(DEFAULT_DAILY_LOG_WORK_TYPE);
+  const [workTitle, setWorkTitle] = useState('');
+  const [workLocation, setWorkLocation] = useState('');
   const [morningText, setMorningText] = useState('');
   const [resultTexts, setResultTexts] = useState<Record<string, string>>({});
   const [remarkTexts, setRemarkTexts] = useState<Record<string, string>>({});
@@ -81,6 +83,7 @@ export default function DailyWorkLogs({
 
   const addWorkItem = (event: React.FormEvent) => {
     event.preventDefault();
+    if (!workTitle.trim()) return;
     if (!morningText.trim()) return;
 
     const timestamp = new Date().toISOString();
@@ -91,6 +94,8 @@ export default function DailyWorkLogs({
       employeeName: currentUser.name,
       employeeRole: currentUser.role,
       workType,
+      workTitle: workTitle.trim(),
+      workLocation: workLocation.trim(),
       morningPlan: morningText.trim(),
       morningSubmittedAt: timestamp,
       eveningResult: '',
@@ -99,8 +104,10 @@ export default function DailyWorkLogs({
     };
 
     setDailyLogs((prev) => [newLog, ...prev]);
+    setWorkTitle('');
+    setWorkLocation('');
     setMorningText('');
-    addToast('오늘 할 일 추가 완료', `${workType} 업무가 셀프 근무일지에 추가되었습니다.`, currentUser.avatar);
+    addToast('업무 항목 추가 완료', `${workTitle.trim()} 업무가 셀프 근무일지에 기록되었습니다.`, currentUser.avatar);
   };
 
   const saveResult = (log: DailyLog) => {
@@ -190,13 +197,23 @@ export default function DailyWorkLogs({
                 {log.eveningStatus}
               </span>
             </div>
-            <h4 className="text-white text-sm font-semibold">{log.morningPlan}</h4>
+            <h4 className="text-white text-sm font-semibold">{log.workTitle || log.morningPlan}</h4>
             <p className="text-[11px] text-slate-500 font-semibold">
               오늘 할 일 작성시간 {formatTime(log.morningSubmittedAt) || '-'}
               {log.eveningSubmittedAt ? ` · 결과 작성시간 ${formatTime(log.eveningSubmittedAt)}` : ''}
             </p>
+            {log.workLocation && (
+              <p className="text-[11px] text-slate-400 font-semibold">시설/위치: {log.workLocation}</p>
+            )}
           </div>
         </div>
+
+        {log.workTitle && (
+          <div className="rounded-xl bg-slate-950/70 border border-slate-800 p-3">
+            <p className="text-[11px] text-indigo-300 font-semibold mb-1">업무내용</p>
+            <p className="text-sm text-slate-200 leading-relaxed whitespace-pre-line">{log.morningPlan}</p>
+          </div>
+        )}
 
         {log.eveningResult && !allowResultEdit && (
           <div className="rounded-xl bg-slate-900/75 border border-slate-800 p-3">
@@ -370,6 +387,20 @@ export default function DailyWorkLogs({
             <form onSubmit={addWorkItem} className="space-y-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-400 block">
+                  업무명 <span className="text-rose-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={workTitle}
+                  onChange={(event) => setWorkTitle(event.target.value)}
+                  placeholder="예: 3호관 분리수거장 배수 상태 확인"
+                  className="w-full px-3.5 py-3 rounded-xl border border-slate-800 bg-slate-950 text-sm focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-400 outline-none text-white font-medium placeholder:text-slate-600"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-400 block">
                   업무구분 <span className="text-rose-400">*</span>
                 </label>
                 <select
@@ -385,13 +416,26 @@ export default function DailyWorkLogs({
 
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-400 block">
-                  오늘 할 일 <span className="text-rose-400">*</span>
+                  시설/위치
+                </label>
+                <input
+                  type="text"
+                  value={workLocation}
+                  onChange={(event) => setWorkLocation(event.target.value)}
+                  placeholder="예: 3호관 후면, 본관 4층, 공학관 연구실"
+                  className="w-full px-3.5 py-3 rounded-xl border border-slate-800 bg-slate-950 text-sm focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-400 outline-none text-white font-medium placeholder:text-slate-600"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-400 block">
+                  업무내용 <span className="text-rose-400">*</span>
                 </label>
                 <textarea
                   rows={5}
                   value={morningText}
                   onChange={(event) => setMorningText(event.target.value)}
-                  placeholder="오늘 처리할 업무를 입력하세요. 필요한 만큼 업무를 계속 추가할 수 있습니다."
+                  placeholder="업무 범위, 처리 기준, 준비물, 주의사항 등을 입력하세요. 필요한 만큼 업무를 계속 추가할 수 있습니다."
                   className="w-full px-3.5 py-3 rounded-xl border border-slate-800 bg-slate-950 text-sm focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-400 outline-none text-white font-medium placeholder:text-slate-600"
                   required
                 />

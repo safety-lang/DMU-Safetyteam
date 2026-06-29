@@ -33,6 +33,8 @@ const dailyLogs: DailyLog[] = [
     employeeId: 'user_lee',
     employeeName: '이인혁',
     employeeRole: '과장',
+    workTitle: '전기 기계동 릴레이 점검',
+    workLocation: '전기 기계동 전력 제어반',
     morningPlan: '전기 기계동 전력 제어반 3호 릴레이 점검',
     morningSubmittedAt: '2026-05-23T08:10:00Z',
     eveningResult: '릴레이 2개 교체 완료 및 전압 확인',
@@ -94,7 +96,9 @@ assert(entries.some((entry) => entry.source === '담당자 자율 등록'), 'dai
 assert(entries.some((entry) => entry.source === '점검일정'), 'completed inspection should create inspection entry');
 assert(!entries.some((entry) => entry.sourceId === 'inspection_2'), 'scheduled inspection should not appear in ledger');
 assert(entries.some((entry) => entry.description.includes('비고: 유의사항')), 'task entry should include completion remarks');
-assert(entries.some((entry) => entry.description.includes('오늘 할 일')), 'daily log entry should summarize to-do text');
+assert(entries.some((entry) => entry.title === '전기 기계동 릴레이 점검'), 'daily log entry should use structured work title');
+assert(entries.some((entry) => entry.location === '전기 기계동 전력 제어반'), 'daily log entry should keep structured work location');
+assert(entries.some((entry) => entry.description.includes('업무내용')), 'daily log entry should summarize work detail text');
 assert(entries.some((entry) => entry.description.includes('비고: 검토사항')), 'daily log entry should include remarks');
 assert(entries.some((entry) => entry.description.includes('팀장 피드백')), 'daily log entry should include manager feedback');
 assert(entries.some((entry) => entry.description.includes('점검유형: 소방')), 'inspection entry should include inspection type');

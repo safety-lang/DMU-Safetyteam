@@ -158,7 +158,7 @@ export default function NewTaskModal({ isOpen, onClose, onSave, users }: NewTask
 
           {/* Title */}
           <div className="space-y-1.5">
-            <label className="text-[10px] uppercase font-black tracking-widest text-slate-400 block mb-1">업무지정 제목 <span className="text-rose-500">*</span></label>
+            <label className="text-[10px] uppercase font-black tracking-widest text-slate-400 block mb-1">업무명 <span className="text-rose-500">*</span></label>
             <input
               type="text"
               value={title}
@@ -224,7 +224,7 @@ export default function NewTaskModal({ isOpen, onClose, onSave, users }: NewTask
 
           {/* Description */}
           <div className="space-y-1.5">
-            <label className="text-[10px] uppercase font-black tracking-widest text-slate-400 block mb-1">업무지정 상세 내용</label>
+            <label className="text-[10px] uppercase font-black tracking-widest text-slate-400 block mb-1">업무내용</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -237,7 +237,7 @@ export default function NewTaskModal({ isOpen, onClose, onSave, users }: NewTask
           {/* Location */}
           <div className="space-y-1.5">
             <div className="space-y-1.5">
-              <label className="text-[10px] uppercase font-black tracking-widest text-slate-400 block mb-1">설비 위치 <span className="text-rose-500">*</span></label>
+              <label className="text-[10px] uppercase font-black tracking-widest text-slate-400 block mb-1">시설/위치 <span className="text-rose-500">*</span></label>
               <input
                 type="text"
                 value={location}

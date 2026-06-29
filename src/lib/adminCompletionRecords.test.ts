@@ -53,6 +53,8 @@ const snapshot: FacilityAppState = {
       employeeName: '김영해',
       employeeRole: '계장',
       workType: '안전관리',
+      workTitle: '연구실 안전점검',
+      workLocation: '공학관 공용 실험실',
       morningPlan: '점검',
       morningSubmittedAt: '2026-05-27T00:30:00.000Z',
       eveningResult: '점검 완료',
@@ -85,6 +87,8 @@ assert(records.length === 2, 'only completed task and completed daily log should
 assert(records.some((record) => record.origin === '업무 지정'), 'completed task should use 업무 지정 origin');
 assert(records.some((record) => record.origin === '담당자 자율 등록'), 'completed daily log should use self-managed origin');
 assert(records.some((record) => record.workType === '안전관리'), 'daily log work type should be used as 업무구분');
+assert(records.some((record) => record.title === '연구실 안전점검'), 'daily log work title should be used');
+assert(records.some((record) => record.location === '공학관 공용 실험실'), 'daily log location should be kept');
 assert(records.some((record) => record.detail.includes('비고: 검토사항')), 'task completion remarks should be included');
 assert(records.some((record) => record.detail.includes('비고: 개선사항')), 'daily log remarks should be included');
 assert(!records.some((record) => record.title.includes('대기 업무')), 'open task should be excluded');
