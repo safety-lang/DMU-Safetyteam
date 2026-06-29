@@ -28,6 +28,7 @@ export function buildCalendarWebhookPayload(task: Task, secret?: string) {
       createdAt: task.createdAt,
       completedAt: task.completedAt,
       completionReport: task.completionReport,
+      completionRemarks: task.completionRemarks,
       comments: task.comments.map((comment) => ({
         senderName: comment.senderName,
         senderRole: comment.senderRole,

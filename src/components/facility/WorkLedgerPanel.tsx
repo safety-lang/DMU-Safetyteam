@@ -69,7 +69,7 @@ export default function WorkLedgerPanel({ entries, role }: WorkLedgerPanelProps)
             업무실적 누적대장
           </h3>
           <p className="text-[11px] text-slate-500 font-bold mt-1">
-            업무지정과 Self-Managed Work Logs에 기록된 내용을 단위업무·증빙 기준으로 누적합니다.
+            업무 지정과 담당자 자율 등록으로 처리된 내용을 단위업무·증빙 기준으로 누적합니다.
           </p>
         </div>
 

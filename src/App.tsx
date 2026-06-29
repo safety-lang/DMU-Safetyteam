@@ -843,7 +843,7 @@ export default function App() {
   };
 
   // Submit Completion Report (기사 -> 완료보고 사진+글)
-  const handleSubmitCompletion = (taskId: string, report: string, photoUrl?: string) => {
+  const handleSubmitCompletion = (taskId: string, report: string, photoUrl?: string, remarks?: string) => {
     const timestamp = new Date().toISOString();
     const targetTask = tasks.find((t) => t.id === taskId);
     if (!targetTask) return;
@@ -863,6 +863,7 @@ export default function App() {
       return {
         ...t,
         completionReport: report,
+        completionRemarks: remarks,
         completionPhotoUrl: photoUrl || t.completionPhotoUrl,
         status: '완료',
         completedAt: timestamp,

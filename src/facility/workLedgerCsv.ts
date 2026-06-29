@@ -2,7 +2,7 @@ import type { WorkLedgerEntry } from './types';
 
 const CSV_HEADERS = [
   '발생일',
-  '출처',
+  '출발점',
   '업무분류',
   '단위업무',
   '제목',

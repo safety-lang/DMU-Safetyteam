@@ -190,8 +190,8 @@ export interface FacilityNotification {
 export type WorkUnitDifficulty = 'A' | 'B' | 'C';
 
 export type WorkLedgerSource =
-  | '업무지정'
-  | 'Self-Managed Work Logs'
+  | '업무 지정'
+  | '담당자 자율 등록'
   | '점검일정';
 
 export interface WorkUnitDefinition {

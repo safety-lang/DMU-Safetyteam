@@ -3,6 +3,7 @@ import { DEFAULT_DAILY_LOG_WORK_TYPE } from './dailyLogWorkTypes';
 
 export interface CompletedWorkRecord {
   id: string;
+  origin: '업무 지정' | '담당자 자율 등록';
   workType: string;
   startedAt?: string;
   completedAt?: string;
@@ -40,19 +41,25 @@ export const buildCompletedWorkRecords = (snapshot: FacilityAppState): Completed
     .filter(isCompletedTaskRecord)
     .map((task) => ({
       id: `task-${task.id}`,
-      workType: task.category || '업무지정',
+      origin: '업무 지정',
+      workType: task.category || '업무 지정',
       startedAt: task.createdAt,
       completedAt: task.completedAt || task.createdAt,
       title: task.title,
       owner: task.assignee,
       location: task.location,
-      detail: task.completionReport || task.description,
+      detail: [
+        `업무내용: ${task.description || '-'}`,
+        `결과: ${task.completionReport || '-'}`,
+        task.completionRemarks ? `비고: ${task.completionRemarks}` : '',
+      ].filter(Boolean).join('\n'),
     }));
 
   const dailyLogRecords: CompletedWorkRecord[] = snapshot.dailyLogs
     .filter(isCompletedDailyLogRecord)
     .map((log) => ({
       id: `daily-${log.id}`,
+      origin: '담당자 자율 등록',
       workType: log.workType || DEFAULT_DAILY_LOG_WORK_TYPE,
       startedAt: log.morningSubmittedAt || `${log.date}T00:00:00`,
       completedAt: log.eveningSubmittedAt || `${log.date}T23:59:59`,
@@ -71,8 +78,9 @@ export const buildCompletedWorkRecords = (snapshot: FacilityAppState): Completed
 };
 
 export const buildCompletedWorkCsv = (records: CompletedWorkRecord[]) => {
-  const headers = ['업무구분', '시작일시', '완료일시', '제목', '담당자', '시설/위치', '업무내용'];
+  const headers = ['출발점', '업무구분', '시작일시', '완료일시', '제목', '담당자', '시설/위치', '업무내용'];
   const rows = records.map((record) => [
+    record.origin,
     record.workType,
     formatAdminRecordDateTime(record.startedAt),
     formatAdminRecordDateTime(record.completedAt),

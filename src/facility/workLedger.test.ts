@@ -19,6 +19,8 @@ const tasks: Task[] = [
     assignee: '박성훈',
     createdAt: '2026-05-20T09:00:00Z',
     completedAt: '2026-05-21T09:00:00Z',
+    completionReport: '보관함 점검 완료',
+    completionRemarks: '유의사항: MSDS 최신본 비치 필요',
     comments: [],
     history: [],
   },
@@ -87,10 +89,11 @@ const entries = buildWorkLedgerEntries({
 });
 
 assert(entries.length === 3, 'ledger should include task, self-managed work log, and completed inspection records');
-assert(entries.some((entry) => entry.source === '업무지정'), 'task should create assignment entry');
-assert(entries.some((entry) => entry.source === 'Self-Managed Work Logs'), 'daily log should create self-managed entry');
+assert(entries.some((entry) => entry.source === '업무 지정'), 'task should create assignment origin entry');
+assert(entries.some((entry) => entry.source === '담당자 자율 등록'), 'daily log should create self-managed origin entry');
 assert(entries.some((entry) => entry.source === '점검일정'), 'completed inspection should create inspection entry');
 assert(!entries.some((entry) => entry.sourceId === 'inspection_2'), 'scheduled inspection should not appear in ledger');
+assert(entries.some((entry) => entry.description.includes('비고: 유의사항')), 'task entry should include completion remarks');
 assert(entries.some((entry) => entry.description.includes('오늘 할 일')), 'daily log entry should summarize to-do text');
 assert(entries.some((entry) => entry.description.includes('비고: 검토사항')), 'daily log entry should include remarks');
 assert(entries.some((entry) => entry.description.includes('팀장 피드백')), 'daily log entry should include manager feedback');
@@ -98,10 +101,11 @@ assert(entries.some((entry) => entry.description.includes('점검유형: 소방'
 
 const csv = buildWorkLedgerCsv(entries);
 
-assert(csv.startsWith('"발생일","출처","업무분류"'), 'csv should include Korean headers');
+assert(csv.startsWith('"발생일","출발점","업무분류"'), 'csv should include Korean headers');
 const removedWorkflowColumn = ['P', 'D', 'C', 'A'].join('');
 assert(!csv.includes(removedWorkflowColumn), 'csv should not include removed workflow column');
-assert(csv.includes('"Self-Managed Work Logs"'), 'csv should include self-managed source label');
+assert(csv.includes('"담당자 자율 등록"'), 'csv should include self-managed origin label');
+assert(csv.includes('"업무 지정"'), 'csv should include assignment origin label');
 assert(csv.includes('"점검일정"'), 'csv should include inspection source label');
 assert(csv.includes('"연구실안전관리"'), 'csv should include unit name');
 

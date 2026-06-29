@@ -48,13 +48,17 @@ const buildEntry = (
 const taskToEntry = (task: Task): WorkLedgerEntry =>
   buildEntry({
     id: `task-${task.id}`,
-    source: '업무지정',
+    source: '업무 지정',
     sourceId: task.id,
     date: task.completedAt || task.createdAt,
     title: task.title,
     unitId: pickWorkUnitId(`${task.title} ${task.category} ${task.description} ${task.location}`),
     status: getTaskStatusLabel(task),
-    description: task.completionReport || task.description,
+    description: [
+      `업무내용: ${task.description || '미작성'}`,
+      `결과: ${task.completionReport || '미작성'}`,
+      task.completionRemarks ? `비고: ${task.completionRemarks}` : '',
+    ].filter(Boolean).join('\n'),
     evidence: task.completionPhotoUrl || task.photoUrl || '업무지정 이력',
     facilityName: task.location,
     location: task.location,
@@ -74,7 +78,7 @@ const dailyLogToEntry = (log: DailyLog): WorkLedgerEntry => {
 
   return buildEntry({
     id: `daily-log-${log.id}`,
-    source: 'Self-Managed Work Logs',
+    source: '담당자 자율 등록',
     sourceId: log.id,
     date: log.eveningSubmittedAt || log.morningSubmittedAt || `${log.date}T00:00:00`,
     title: `${log.employeeName} ${workType} 근무일지`,
@@ -87,7 +91,7 @@ const dailyLogToEntry = (log: DailyLog): WorkLedgerEntry => {
       log.remarks ? `비고: ${log.remarks}` : '',
       formatLogFeedback(log),
     ].filter(Boolean).join('\n'),
-    evidence: 'Self-Managed Work Logs',
+    evidence: '담당자 자율 등록 기록',
     assignee: log.employeeName,
     createdAt: log.morningSubmittedAt || log.eveningSubmittedAt || `${log.date}T00:00:00`,
   });

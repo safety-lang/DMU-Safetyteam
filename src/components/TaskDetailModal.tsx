@@ -14,7 +14,7 @@ interface TaskDetailModalProps {
   currentUser: UserProfile;
   focusActionPanel?: boolean;
   onUpdateStatus: (taskId: string, newStatus: TaskStatus) => void;
-  onSubmitCompletion: (taskId: string, report: string, photoUrl?: string) => void;
+  onSubmitCompletion: (taskId: string, report: string, photoUrl?: string, remarks?: string) => void;
   onAddComment: (taskId: string, content: string) => void;
   onAttachPhoto: (taskId: string, target: 'reference' | 'completion', photoUrl: string) => void;
   onManagerAction: (
@@ -47,6 +47,7 @@ export default function TaskDetailModal({
   const [commentText, setCommentText] = useState('');
   const [additionalWorkText, setAdditionalWorkText] = useState('');
   const [reportText, setReportText] = useState('');
+  const [reportRemarks, setReportRemarks] = useState('');
   const [completionPhoto, setCompletionPhoto] = useState<string | undefined>(undefined);
   const [isPhotoUploading, setIsPhotoUploading] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
@@ -67,6 +68,13 @@ export default function TaskDetailModal({
 
     return () => window.clearTimeout(timerId);
   }, [focusActionPanel, isOpen, task.id]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setReportText(task.completionReport ?? '');
+    setReportRemarks(task.completionRemarks ?? '');
+    setCompletionPhoto(undefined);
+  }, [isOpen, task.id, task.completionReport, task.completionRemarks]);
 
   if (!isOpen) return null;
 
@@ -134,8 +142,9 @@ export default function TaskDetailModal({
       alert('완료 처리 내용 요약을 입력해 주십시오.');
       return;
     }
-    onSubmitCompletion(task.id, reportText.trim(), completionPhoto);
+    onSubmitCompletion(task.id, reportText.trim(), completionPhoto, reportRemarks.trim());
     setReportText('');
+    setReportRemarks('');
     setCompletionPhoto(undefined);
   };
 
@@ -324,6 +333,12 @@ export default function TaskDetailModal({
                   )}
                 </div>
                 <p className="text-xs text-slate-200 leading-relaxed whitespace-pre-wrap font-semibold">{task.completionReport}</p>
+                {task.completionRemarks && (
+                  <div className="pt-2 border-t border-emerald-500/20">
+                    <p className="text-[10px] text-amber-300 font-black mb-1">비고</p>
+                    <p className="text-xs text-slate-200 leading-relaxed whitespace-pre-wrap font-semibold">{task.completionRemarks}</p>
+                  </div>
+                )}
               </div>
             )}
 
@@ -418,6 +433,16 @@ export default function TaskDetailModal({
                         className="w-full p-3 text-xs border border-slate-800 rounded-xl outline-none focus:border-indigo-400 bg-slate-950 block h-20 text-white font-semibold placeholder:text-slate-600"
                         required
                       />
+
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] uppercase font-black tracking-widest text-slate-400 block">비고</label>
+                        <textarea
+                          value={reportRemarks}
+                          onChange={(e) => setReportRemarks(e.target.value)}
+                          placeholder="유의사항, 개선사항, 검토사항, 건의사항 등을 입력해 주세요."
+                          className="w-full p-3 text-xs border border-slate-800 rounded-xl outline-none focus:border-amber-400 bg-slate-950 block h-16 text-white font-semibold placeholder:text-slate-600"
+                        />
+                      </div>
 
                       {/* Photo Attachment under 완료보고 */}
                       <div className="flex items-center justify-between gap-1.5">

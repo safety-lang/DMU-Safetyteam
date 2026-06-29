@@ -69,6 +69,7 @@ export interface Task {
   photoUrl?: string; // Original request photo
   completionPhotoUrl?: string; // Report photo
   completionReport?: string; // Report comments
+  completionRemarks?: string; // 비고: 유의사항, 개선사항, 검토사항, 건의사항
   completedAt?: string;
   comments: TaskComment[];
   history: TaskHistory[];

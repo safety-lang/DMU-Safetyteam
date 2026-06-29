@@ -396,7 +396,7 @@ export default function AdminDataCenter({
               <h3 className="text-white text-lg font-semibold">시설관리팀 단위 업무별 결과</h3>
             </div>
             <p className="text-sm text-slate-400 mt-1">
-              완료 처리된 업무지정과 완료된 Self-Managed Work Logs만 검색하고 내려받습니다.
+              업무 지정과 담당자 자율 등록 업무를 같은 기준으로 모아 검색하고 내려받습니다.
             </p>
           </div>
 
@@ -441,8 +441,9 @@ export default function AdminDataCenter({
 
         <div className="overflow-hidden rounded-2xl border border-slate-800">
           <div className="max-h-[560px] overflow-auto">
-            <table className="w-full min-w-[1180px] text-left text-sm">
+              <table className="w-full min-w-[1280px] text-left text-sm">
               <colgroup>
+                <col className="w-[150px]" />
                 <col className="w-[140px]" />
                 <col className="w-[180px]" />
                 <col className="w-[180px]" />
@@ -453,6 +454,7 @@ export default function AdminDataCenter({
               </colgroup>
               <thead className="sticky top-0 bg-slate-950 text-slate-300 z-10">
                 <tr className="border-b border-slate-800">
+                  <th className="px-4 py-3 font-semibold">출발점</th>
                   <th className="px-4 py-3 font-semibold">업무구분</th>
                   <th className="px-4 py-3 font-semibold">시작일시</th>
                   <th className="px-4 py-3 font-semibold">완료일시</th>
@@ -465,13 +467,22 @@ export default function AdminDataCenter({
               <tbody className="divide-y divide-slate-800 bg-slate-950/55">
                 {filteredRecords.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-4 py-12 text-center text-slate-500">
+                    <td colSpan={8} className="px-4 py-12 text-center text-slate-500">
                       완료된 업무 기록이 없습니다.
                     </td>
                   </tr>
                 ) : (
                   filteredRecords.map((record) => (
                     <tr key={record.id} className="hover:bg-slate-900/80">
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex whitespace-nowrap rounded-lg border px-3 py-1 text-xs font-semibold ${
+                          record.origin === '업무 지정'
+                            ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-200'
+                            : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-200'
+                        }`}>
+                          {record.origin}
+                        </span>
+                      </td>
                       <td className="px-4 py-3">
                         <span className="inline-flex whitespace-nowrap rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-200 px-3 py-1 text-xs font-semibold">
                           {record.workType}
