@@ -57,12 +57,12 @@ export default function GoogleCalendarSyncPanel({
     setSecretDraft(webhookSecret);
   }, [webhookSecret]);
 
-  const hasWebAppUrl = webAppUrl.trim().length > 0;
+  const hasWebAppUrl = isAppsScriptWebAppUrl(webAppUrl);
   const unsyncedCount = tasks.filter((task) => !syncedTaskIds.includes(task.id)).length;
 
   const handleSaveSettings = () => {
     const nextUrl = urlDraft.trim();
-    const nextSecret = secretDraft.trim();
+    const nextSecret = nextUrl ? secretDraft.trim() : '';
 
     if (nextUrl && !isAppsScriptWebAppUrl(nextUrl)) {
       addToast(
@@ -75,6 +75,9 @@ export default function GoogleCalendarSyncPanel({
 
     onWebAppUrlChange(nextUrl);
     onWebhookSecretChange(nextSecret);
+    if (!nextUrl) {
+      setSecretDraft('');
+    }
     addToast(
       'Google 할 일 연결 설정 저장',
       nextUrl

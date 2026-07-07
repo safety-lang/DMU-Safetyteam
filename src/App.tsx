@@ -19,6 +19,7 @@ import {
   SHARED_CALENDAR_AUTO_SYNC_KEY,
   SHARED_CALENDAR_WEB_APP_URL_KEY,
   SHARED_CALENDAR_WEBHOOK_SECRET_KEY,
+  isAppsScriptWebAppUrl,
   syncTaskToGoogleCalendar,
 } from './lib/googleCalendar';
 import { getErrorMessage } from './lib/errors';
@@ -77,6 +78,15 @@ type AudioContextWindow = Window &
 
 const SHARED_CALENDAR_SYNC_STORAGE_KEY = 'fms_google_synced_tasks_facility_shared';
 const SUPPLY_PURCHASE_REQUEST_URL = 'https://facility-supply-app.vercel.app/request';
+
+const readStoredCalendarWebAppUrl = () => {
+  const savedUrl = localStorage.getItem(SHARED_CALENDAR_WEB_APP_URL_KEY) || '';
+  if (!savedUrl || isAppsScriptWebAppUrl(savedUrl)) return savedUrl;
+
+  localStorage.removeItem(SHARED_CALENDAR_WEB_APP_URL_KEY);
+  localStorage.removeItem(SHARED_CALENDAR_WEBHOOK_SECRET_KEY);
+  return '';
+};
 
 const readStoredTasks = () => {
   const saved = localStorage.getItem('fms_tasks');
@@ -161,7 +171,7 @@ export default function App() {
 
   // Shared Google Calendar integration states
   const [calendarWebAppUrl, setCalendarWebAppUrl] = useState(() => {
-    return localStorage.getItem(SHARED_CALENDAR_WEB_APP_URL_KEY) || '';
+    return readStoredCalendarWebAppUrl();
   });
   const [calendarWebhookSecret, setCalendarWebhookSecret] = useState(() => {
     return localStorage.getItem(SHARED_CALENDAR_WEBHOOK_SECRET_KEY) || '';
@@ -395,8 +405,11 @@ export default function App() {
     setNotifications(snapshot.notifications);
     setDailyLogs(snapshot.dailyLogs);
     setSyncedTaskIds(Array.isArray(snapshot.syncedTaskIds) ? snapshot.syncedTaskIds : []);
-    setCalendarWebAppUrl(snapshot.calendarWebAppUrl || '');
-    setCalendarWebhookSecret(snapshot.calendarWebhookSecret || '');
+    const nextCalendarWebAppUrl = snapshot.calendarWebAppUrl && isAppsScriptWebAppUrl(snapshot.calendarWebAppUrl)
+      ? snapshot.calendarWebAppUrl
+      : '';
+    setCalendarWebAppUrl(nextCalendarWebAppUrl);
+    setCalendarWebhookSecret(nextCalendarWebAppUrl ? snapshot.calendarWebhookSecret || '' : '');
     if (snapshot.facilityUserAccess) {
       facilityAccess.replaceAccessList(snapshot.facilityUserAccess);
     }
