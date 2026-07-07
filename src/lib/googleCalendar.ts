@@ -2,7 +2,7 @@ import { Task } from '../types';
 
 export const FACILITY_SHARED_CALENDAR_ID =
   'c_04b42241eb38f7f266a3bb553557a109b5ec69bdf42888d195c106f7de81f36c@group.calendar.google.com';
-export const FACILITY_SHARED_CALENDAR_NAME = '시설관리팀 공유캘린더';
+export const FACILITY_SHARED_CALENDAR_NAME = '시설관리팀 공유 일정 할 일';
 
 export const SHARED_CALENDAR_WEB_APP_URL_KEY = 'fms_shared_calendar_web_app_url';
 export const SHARED_CALENDAR_WEBHOOK_SECRET_KEY = 'fms_shared_calendar_webhook_secret';
@@ -26,6 +26,7 @@ export function buildCalendarWebhookPayload(task: Task, secret?: string) {
       location: task.location,
       assignee: task.assignee,
       createdAt: task.createdAt,
+      dueDate: task.dueDate,
       completedAt: task.completedAt,
       completionReport: task.completionReport,
       completionRemarks: task.completionRemarks,

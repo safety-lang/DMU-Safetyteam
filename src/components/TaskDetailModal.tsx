@@ -371,7 +371,7 @@ export default function TaskDetailModal({
               <div className="mb-4 p-3 bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-between text-xs font-sans">
                 <span className="text-slate-300 font-bold flex items-center gap-1.5 select-none">
                   <Calendar className="w-4 h-4 text-indigo-400" />
-                  공유캘린더
+                  Google 할 일
                 </span>
                 {isSynced ? (
                   <span className="px-2.5 py-1 text-[9px] rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-black flex items-center gap-1 select-none">
@@ -384,7 +384,7 @@ export default function TaskDetailModal({
                     onClick={() => onSyncSingle?.(task)}
                     className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-505 text-white rounded-xl text-[9px] font-black cursor-pointer shadow-md transition-all active:scale-95"
                   >
-                    일정 전송
+                    할 일 전송
                   </button>
                 ) : (
                   <span className="text-slate-500 text-[9px] font-black select-none">웹앱 미설정</span>

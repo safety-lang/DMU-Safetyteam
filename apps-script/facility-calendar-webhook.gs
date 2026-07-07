@@ -1,27 +1,40 @@
 const FACILITY_SHARED_CALENDAR_ID = 'c_04b42241eb38f7f266a3bb553557a109b5ec69bdf42888d195c106f7de81f36c@group.calendar.google.com';
+const FACILITY_SHARED_TASKLIST_TITLE = '시설관리팀 공유 일정';
+const TASKLIST_ID_PROPERTY = 'FACILITY_SHARED_TASKLIST_ID';
+const EXPECTED_EXECUTION_ACCOUNT = 'rhs@dongyang.ac.kr';
 const TIME_ZONE = 'Asia/Seoul';
 
 function doGet() {
   try {
     const calendar = CalendarApp.getCalendarById(FACILITY_SHARED_CALENDAR_ID);
+    const taskList = getOrCreateFacilityTaskList_();
     const hasSecret = Boolean(PropertiesService.getScriptProperties().getProperty('WEBHOOK_SECRET'));
 
     return jsonResponse({
-      ok: Boolean(calendar),
-      service: 'DMU facility calendar webhook',
+      ok: Boolean(taskList),
+      service: 'DMU facility shared Google Tasks webhook',
       calendarId: FACILITY_SHARED_CALENDAR_ID,
+      taskListTitle: FACILITY_SHARED_TASKLIST_TITLE,
+      taskListId: taskList && taskList.id,
+      expectedExecutionAccount: EXPECTED_EXECUTION_ACCOUNT,
+      executionAccount: getExecutionAccount_(),
       calendarAccess: Boolean(calendar),
+      tasksAccess: Boolean(taskList),
       webhookSecretRequired: hasSecret,
-      message: calendar
-        ? '시설관리팀 공유캘린더 접근이 확인되었습니다.'
-        : '시설관리팀 공유캘린더를 찾을 수 없습니다. 실행 계정 권한을 확인해 주세요.',
+      message: taskList
+        ? '시설관리팀 공유 일정 할 일 목록 접근이 확인되었습니다.'
+        : '시설관리팀 공유 일정 할 일 목록을 준비할 수 없습니다. rhs@dongyang.ac.kr 계정으로 배포했는지 확인해 주세요.',
     });
   } catch (error) {
     return jsonResponse({
       ok: false,
-      service: 'DMU facility calendar webhook',
+      service: 'DMU facility shared Google Tasks webhook',
       calendarId: FACILITY_SHARED_CALENDAR_ID,
+      taskListTitle: FACILITY_SHARED_TASKLIST_TITLE,
+      expectedExecutionAccount: EXPECTED_EXECUTION_ACCOUNT,
+      executionAccount: getExecutionAccount_(),
       calendarAccess: false,
+      tasksAccess: false,
       error: String(error && error.message ? error.message : error),
     });
   }
@@ -34,47 +47,79 @@ function doPost(e) {
 
     const task = payload.task;
     if (!task || !task.id || !task.title) {
-      throw new Error('작업지시 데이터가 없습니다.');
+      throw new Error('업무지정 데이터가 없습니다.');
     }
 
-    const calendar = CalendarApp.getCalendarById(FACILITY_SHARED_CALENDAR_ID);
-    if (!calendar) {
-      throw new Error('시설관리팀 공유캘린더를 찾을 수 없습니다. 이 스크립트 실행 계정의 캘린더 권한을 확인해 주세요.');
+    const taskList = getOrCreateFacilityTaskList_();
+    if (!taskList || !taskList.id) {
+      throw new Error('시설관리팀 공유 일정 할 일 목록을 준비할 수 없습니다. rhs@dongyang.ac.kr 계정과 Google Tasks API 권한을 확인해 주세요.');
     }
 
-    const startTime = new Date(task.createdAt || new Date());
-    const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
-    const existingEvent = findExistingEvent_(calendar, task.id, startTime, endTime);
+    const existingTask = findExistingGoogleTask_(taskList.id, task.id);
 
-    if (existingEvent) {
+    if (existingTask) {
       return jsonResponse({
         ok: true,
         duplicate: true,
-        eventId: existingEvent.getId(),
+        googleTaskId: existingTask.id,
+        webViewLink: existingTask.webViewLink || '',
       });
     }
 
-    const event = calendar.createEvent(
-      `[시설관리] ${task.title} (${task.category || '업무'})`,
-      startTime,
-      endTime,
-      {
-        location: task.location || '',
-        description: buildDescription_(task),
-      }
-    );
-
-    setEventColor_(event, task.priority);
+    const googleTask = Tasks.Tasks.insert(buildGoogleTask_(task), taskList.id);
 
     return jsonResponse({
       ok: true,
-      eventId: event.getId(),
+      googleTaskId: googleTask.id,
+      webViewLink: googleTask.webViewLink || '',
     });
   } catch (error) {
     return jsonResponse({
       ok: false,
       error: String(error && error.message ? error.message : error),
     });
+  }
+}
+
+function getOrCreateFacilityTaskList_() {
+  const properties = PropertiesService.getScriptProperties();
+  const savedTaskListId = properties.getProperty(TASKLIST_ID_PROPERTY);
+  if (savedTaskListId) {
+    try {
+      return Tasks.Tasklists.get(savedTaskListId);
+    } catch (error) {
+      properties.deleteProperty(TASKLIST_ID_PROPERTY);
+    }
+  }
+
+  let pageToken = '';
+  do {
+    const result = Tasks.Tasklists.list({
+      maxResults: 100,
+      pageToken: pageToken || undefined,
+    });
+    const taskLists = result.items || [];
+    for (let i = 0; i < taskLists.length; i += 1) {
+      if (taskLists[i].title === FACILITY_SHARED_TASKLIST_TITLE) {
+        properties.setProperty(TASKLIST_ID_PROPERTY, taskLists[i].id);
+        return taskLists[i];
+      }
+    }
+    pageToken = result.nextPageToken || '';
+  } while (pageToken);
+
+  const createdTaskList = Tasks.Tasklists.insert({
+    title: FACILITY_SHARED_TASKLIST_TITLE,
+  });
+  properties.setProperty(TASKLIST_ID_PROPERTY, createdTaskList.id);
+  return createdTaskList;
+}
+
+function getExecutionAccount_() {
+  try {
+    return Session.getEffectiveUser().getEmail() || '';
+  } catch (error) {
+    return '';
   }
 }
 
@@ -85,11 +130,44 @@ function validateSecret_(incomingSecret) {
   }
 }
 
-function findExistingEvent_(calendar, taskId, startTime, endTime) {
-  const from = new Date(startTime.getTime() - 24 * 60 * 60 * 1000);
-  const to = new Date(endTime.getTime() + 24 * 60 * 60 * 1000);
-  const events = calendar.getEvents(from, to, { search: taskId });
-  return events.length > 0 ? events[0] : null;
+function findExistingGoogleTask_(taskListId, taskId) {
+  const marker = getTaskMarker_(taskId);
+  let pageToken = '';
+  do {
+    const result = Tasks.Tasks.list(taskListId, {
+      maxResults: 100,
+      showCompleted: true,
+      showDeleted: false,
+      showHidden: true,
+      pageToken: pageToken || undefined,
+    });
+    const tasks = result.items || [];
+    for (let i = 0; i < tasks.length; i += 1) {
+      if ((tasks[i].notes || '').indexOf(marker) !== -1) {
+        return tasks[i];
+      }
+    }
+    pageToken = result.nextPageToken || '';
+  } while (pageToken);
+
+  return null;
+}
+
+function buildGoogleTask_(task) {
+  const googleTask = {
+    title: '[시설관리] ' + task.title,
+    notes: buildDescription_(task),
+    status: task.status === '완료' ? 'completed' : 'needsAction',
+  };
+  const due = formatGoogleTaskDueDate_(task.dueDate);
+  if (due) {
+    googleTask.due = due;
+  }
+  return googleTask;
+}
+
+function getTaskMarker_(taskId) {
+  return 'DMU_TASK_ID:' + taskId;
 }
 
 function buildDescription_(task) {
@@ -102,6 +180,7 @@ function buildDescription_(task) {
   return [
     '* DMU 시설관리팀 스마트 업무 지시서',
     '',
+    getTaskMarker_(task.id),
     '- 작업 ID: ' + task.id,
     '- 분야: ' + (task.category || ''),
     '- 위치: ' + (task.location || ''),
@@ -109,31 +188,28 @@ function buildDescription_(task) {
     '- 우선순위: ' + (task.priority || ''),
     '- 상태: ' + (task.status || ''),
     '- 발행일: ' + formatDate_(task.createdAt),
+    '- 완료 예정일시: ' + formatDate_(task.dueDate),
     '',
     '■ 작업 설명',
     task.description || '',
     task.completionReport ? '\n■ 완료 보고\n' + task.completionReport : '',
+    task.completionRemarks ? '\n■ 비고\n' + task.completionRemarks : '',
     comments,
   ].join('\n');
 }
 
-function setEventColor_(event, priority) {
-  if (priority === '긴급') {
-    event.setColor(CalendarApp.EventColor.RED);
-    return;
-  }
-
-  if (priority === '보통') {
-    event.setColor(CalendarApp.EventColor.YELLOW);
-    return;
-  }
-
-  event.setColor(CalendarApp.EventColor.BLUE);
-}
-
 function formatDate_(value) {
   if (!value) return '';
-  return Utilities.formatDate(new Date(value), TIME_ZONE, 'yyyy-MM-dd HH:mm');
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return Utilities.formatDate(date, TIME_ZONE, 'yyyy-MM-dd HH:mm');
+}
+
+function formatGoogleTaskDueDate_(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return Utilities.formatDate(date, TIME_ZONE, "yyyy-MM-dd'T'00:00:00.000'Z'");
 }
 
 function jsonResponse(payload) {

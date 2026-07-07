@@ -758,23 +758,23 @@ export default function App() {
       },
     );
 
-    // Auto sync to the facility shared calendar if enabled
+    // Auto sync to the facility shared Google Tasks list if enabled
     const autoSync = localStorage.getItem(SHARED_CALENDAR_AUTO_SYNC_KEY) === 'true';
     if (autoSync && calendarWebAppUrl) {
       syncTaskToGoogleCalendar(newTask, calendarWebAppUrl, calendarWebhookSecret)
         .then(() => {
           setSyncedTaskIds((prev) => [...prev, newTask.id]);
           addToast(
-            '공유캘린더 전송 요청 완료',
-            `'${newTask.title}' 지시를 ${FACILITY_SHARED_CALENDAR_NAME} 웹앱으로 보냈습니다. 캘린더에서 일정 생성을 확인해 주세요.`,
+            'Google 할 일 전송 요청 완료',
+            `'${newTask.title}' 지시를 ${FACILITY_SHARED_CALENDAR_NAME} 웹앱으로 보냈습니다. Google 캘린더의 할 일에서 확인해 주세요.`,
             '📅'
           );
         })
         .catch((err) => {
           console.error('Auto sync error:', err);
           addToast(
-            '공유캘린더 동기화 실패',
-            err?.message || '공유캘린더 추가 중 통신 오류가 있어 수동 연동을 이용하십시오.',
+            'Google 할 일 동기화 실패',
+            err?.message || 'Google 할 일 추가 중 통신 오류가 있어 수동 연동을 이용하십시오.',
             '⚠️'
           );
         });
@@ -1855,13 +1855,13 @@ export default function App() {
               await syncTaskToGoogleCalendar(task, calendarWebAppUrl, calendarWebhookSecret);
               setSyncedTaskIds((prev) => [...prev, task.id]);
               addToast(
-                '공유캘린더 전송 요청 완료',
-                `'${task.title}' 오더를 ${FACILITY_SHARED_CALENDAR_NAME} 웹앱으로 보냈습니다. 캘린더에서 일정 생성을 확인해 주세요.`,
+                'Google 할 일 전송 요청 완료',
+                `'${task.title}' 업무를 ${FACILITY_SHARED_CALENDAR_NAME} 웹앱으로 보냈습니다. Google 캘린더의 할 일에서 확인해 주세요.`,
                 '📅'
               );
             } catch (err) {
               console.error(err);
-              addToast('동기화 처리 실패', getErrorMessage(err, 'API 연동 에러'), '⚠️');
+              addToast('동기화 처리 실패', getErrorMessage(err, 'Google 할 일 연동 에러'), '⚠️');
             }
           }}
         />

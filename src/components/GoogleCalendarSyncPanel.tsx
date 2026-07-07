@@ -75,7 +75,7 @@ export default function GoogleCalendarSyncPanel({
     onWebAppUrlChange(nextUrl);
     onWebhookSecretChange(nextSecret);
     addToast(
-      '공유캘린더 연결 설정 저장',
+      'Google 할 일 연결 설정 저장',
       nextUrl
         ? `${FACILITY_SHARED_CALENDAR_NAME} 전송용 웹앱 URL이 저장되었습니다.`
         : '웹앱 URL 설정이 비워졌습니다.',
@@ -101,7 +101,7 @@ export default function GoogleCalendarSyncPanel({
     }
 
     window.open(targetUrl, '_blank', 'noopener,noreferrer');
-    addToast('웹앱 확인', '새 창에서 ok: true와 calendarAccess: true가 보이면 배포와 캘린더 권한이 정상입니다.', '↗');
+    addToast('웹앱 확인', '새 창에서 ok: true와 tasksAccess: true가 보이면 rhs@dongyang.ac.kr Google 할 일 전송 준비가 된 상태입니다.', '↗');
   };
 
   const handleToggleAutoSync = () => {
@@ -116,7 +116,7 @@ export default function GoogleCalendarSyncPanel({
     addToast(
       '자동 연동 설정 변경',
       nextValue
-        ? `신규 업무지정이 등록되면 ${FACILITY_SHARED_CALENDAR_NAME}으로 자동 전송됩니다.`
+        ? `신규 업무지정이 등록되면 ${FACILITY_SHARED_CALENDAR_NAME}로 자동 전송됩니다.`
         : '신규 업무지정 자동 전송이 꺼졌습니다. 수동 연동은 계속 사용할 수 있습니다.',
       '📅'
     );
@@ -133,12 +133,12 @@ export default function GoogleCalendarSyncPanel({
       await syncTaskToGoogleCalendar(task, webAppUrl, webhookSecret);
       onTasksSynced([...new Set([...syncedTaskIds, task.id])]);
       addToast(
-        '공유캘린더 전송 요청 완료',
-        `'${task.title}' 지시를 ${FACILITY_SHARED_CALENDAR_NAME} 웹앱으로 보냈습니다. 캘린더에서 일정 생성을 확인해 주세요.`,
+        'Google 할 일 전송 요청 완료',
+        `'${task.title}' 지시를 ${FACILITY_SHARED_CALENDAR_NAME} 웹앱으로 보냈습니다. Google 캘린더의 할 일에서 확인해 주세요.`,
         '✅'
       );
     } catch (err) {
-      addToast('전송 실패', getErrorMessage(err, '공유캘린더 전송 중 오류가 발생했습니다.'), '❌');
+      addToast('전송 실패', getErrorMessage(err, 'Google 할 일 전송 중 오류가 발생했습니다.'), '❌');
     } finally {
       setSyncingTaskId(null);
     }
@@ -152,12 +152,12 @@ export default function GoogleCalendarSyncPanel({
 
     const unsynced = tasks.filter((task) => !syncedTaskIds.includes(task.id));
     if (unsynced.length === 0) {
-      addToast('동기화 완료', '이미 모든 업무지정이 공유캘린더로 전송된 상태입니다.', '✓');
+      addToast('동기화 완료', '이미 모든 업무지정이 Google 할 일로 전송된 상태입니다.', '✓');
       return;
     }
 
     const confirmed = window.confirm(
-      `${FACILITY_SHARED_CALENDAR_NAME}으로 미전송 업무지정 ${unsynced.length}건을 일괄 전송하시겠습니까?`
+      `${FACILITY_SHARED_CALENDAR_NAME}로 미전송 업무지정 ${unsynced.length}건을 일괄 전송하시겠습니까?`
     );
     if (!confirmed) return;
 
@@ -183,8 +183,8 @@ export default function GoogleCalendarSyncPanel({
     addToast(
       successCount > 0 ? '일괄 전송 요청 완료' : '일괄 전송 실패',
       successCount > 0
-        ? `총 ${successCount}건의 업무지정을 ${FACILITY_SHARED_CALENDAR_NAME} 웹앱으로 보냈습니다. 캘린더에서 일정 생성을 확인해 주세요.`
-        : '공유캘린더 웹앱으로 전송된 업무지정이 없습니다. 웹앱 URL과 배포 권한을 확인해 주세요.',
+        ? `총 ${successCount}건의 업무지정을 ${FACILITY_SHARED_CALENDAR_NAME} 웹앱으로 보냈습니다. Google 캘린더의 할 일에서 확인해 주세요.`
+        : 'Google 할 일 웹앱으로 전송된 업무지정이 없습니다. 웹앱 URL과 배포 권한을 확인해 주세요.',
       successCount > 0 ? '✨' : '⚠️'
     );
   };
@@ -210,7 +210,7 @@ export default function GoogleCalendarSyncPanel({
             </div>
             <div>
               <h2 className="text-white font-black text-sm tracking-tight flex items-center gap-2">
-                시설관리팀 공유캘린더 스마트 전송
+                시설관리팀 공유 일정 할 일 전송
                 {hasWebAppUrl && (
                   <span className="bg-indigo-600/20 text-indigo-400 border border-indigo-530/20 text-[9px] px-2 py-0.5 rounded-lg font-black tracking-widest uppercase">
                     WEBHOOK READY
@@ -218,7 +218,7 @@ export default function GoogleCalendarSyncPanel({
                 )}
               </h2>
               <p className="text-xs text-slate-400 mt-1 font-semibold leading-relaxed max-w-2xl">
-                앱 사용자는 Google 로그인을 하지 않습니다. 업무지정은 저장된 Apps Script 웹앱으로 전송되고, 웹앱이 {FACILITY_SHARED_CALENDAR_NAME}에 대신 등록합니다.
+                앱 사용자는 Google 로그인을 하지 않습니다. 업무지정은 저장된 Apps Script 웹앱으로 전송되고, rhs@dongyang.ac.kr로 배포된 웹앱이 Google 캘린더에 보이는 할 일로 등록합니다.
               </p>
               <p className="text-[10px] text-slate-600 mt-1 font-mono break-all">{FACILITY_SHARED_CALENDAR_ID}</p>
 
@@ -235,7 +235,7 @@ export default function GoogleCalendarSyncPanel({
                   ) : (
                     <ToggleLeft className="w-5 h-5 text-slate-600" />
                   )}
-                  <span>신규 지시 발행 시 자동 공유캘린더 전송</span>
+                  <span>신규 지시 발행 시 자동 Google 할 일 전송</span>
                 </button>
                 <div className="h-4 w-[1px] bg-slate-800"></div>
                 <span className="text-slate-500 font-bold">
@@ -321,7 +321,7 @@ export default function GoogleCalendarSyncPanel({
             {
               step: '1',
               title: 'Apps Script 배포',
-              text: 'Google Apps Script에서 시설관리 웹앱을 배포합니다. 실행 계정은 공유캘린더 권한이 있는 계정이어야 합니다.',
+              text: 'rhs@dongyang.ac.kr 계정으로 Google Apps Script에 로그인한 뒤 시설관리 웹앱을 배포합니다. 실행 계정은 나로 설정하고 Google Tasks 권한을 승인합니다.',
             },
             {
               step: '2',
@@ -336,7 +336,7 @@ export default function GoogleCalendarSyncPanel({
             {
               step: '4',
               title: '웹앱 확인',
-              text: '웹앱 확인을 눌렀을 때 ok: true, calendarAccess: true가 보이면 업무지정을 캘린더로 보낼 수 있습니다.',
+              text: '웹앱 확인을 눌렀을 때 ok: true, tasksAccess: true가 보이면 업무지정을 Google 캘린더의 할 일로 보낼 수 있습니다.',
             },
           ].map((item) => (
             <div key={item.step} className="rounded-2xl border border-slate-700 bg-slate-950/70 p-3.5">
@@ -364,11 +364,11 @@ export default function GoogleCalendarSyncPanel({
           <div>
             <p>
               {hasWebAppUrl
-                ? '웹앱 URL이 저장되었습니다. 웹앱 확인을 눌러 ok: true와 calendarAccess: true가 함께 보이면 전송 준비가 끝난 상태입니다.'
+                ? '웹앱 URL이 저장되었습니다. 웹앱 확인을 눌러 ok: true와 tasksAccess: true가 함께 보이면 전송 준비가 끝난 상태입니다.'
                 : 'Apps Script 웹앱을 배포한 뒤 /exec URL을 붙여넣고 설정 저장을 누르세요.'}
             </p>
             <p className="mt-1 text-slate-400">
-              배포 파일은 <span className="font-mono">apps-script/facility-calendar-webhook.gs</span>에 준비되어 있으며, 실제 일정 등록 확인은 작업 상세 화면의 <span className="text-slate-200">일정 전송</span>으로 진행합니다.
+              배포 파일은 <span className="font-mono">apps-script/facility-calendar-webhook.gs</span>에 준비되어 있으며, 실제 할 일 등록 확인은 작업 상세 화면의 <span className="text-slate-200">할 일 전송</span>으로 진행합니다.
             </p>
             <p className="mt-1 text-slate-400">
               연동 키는 선택 사항입니다. Apps Script에서 WEBHOOK_SECRET을 별도로 설정한 경우에만 같은 값을 입력하고, 설정하지 않았다면 비워 두면 됩니다.

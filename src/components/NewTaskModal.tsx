@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { TaskPriority, Task } from '../types';
-import { X, Upload, Check, AlertCircle } from 'lucide-react';
+import { X, Upload, Check, AlertCircle, CalendarClock } from 'lucide-react';
 import { readTaskImageFile, validateTaskImageFile } from '../lib/taskImage';
 import {
   DAILY_LOG_WORK_TYPES,
@@ -22,6 +22,7 @@ export default function NewTaskModal({ isOpen, onClose, onSave, users }: NewTask
   const [location, setLocation] = useState('');
   const [priority, setPriority] = useState<TaskPriority>('보통');
   const [dueDate, setDueDate] = useState('');
+  const [dueTime, setDueTime] = useState('17:00');
   const [selectedAssignees, setSelectedAssignees] = useState<string[]>([]);
   const [photoUrl, setPhotoUrl] = useState<string | undefined>(undefined);
   const [dragActive, setDragActive] = useState(false);
@@ -95,7 +96,7 @@ export default function NewTaskModal({ isOpen, onClose, onSave, users }: NewTask
       location: location.trim(),
       priority,
       assignee: selectedAssignees.join(', '),
-      dueDate: dueDate ? new Date(dueDate).toISOString() : undefined,
+      dueDate: dueDate ? new Date(`${dueDate}T${dueTime || '17:00'}`).toISOString() : undefined,
       photoUrl,
     });
 
@@ -106,6 +107,7 @@ export default function NewTaskModal({ isOpen, onClose, onSave, users }: NewTask
     setLocation('');
     setPriority('보통');
     setDueDate('');
+    setDueTime('17:00');
     setSelectedAssignees([]);
     setPhotoUrl(undefined);
     onClose();
@@ -211,14 +213,26 @@ export default function NewTaskModal({ isOpen, onClose, onSave, users }: NewTask
 
           <div className="space-y-1.5">
             <label className="text-[10px] uppercase font-black tracking-widest text-slate-400 block mb-1">완료 예정일시</label>
-            <input
-              type="datetime-local"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800/80 bg-slate-950 text-xs focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-400 outline-none text-white font-semibold"
-            />
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_120px] gap-2">
+              <label className="relative block">
+                <CalendarClock className="w-4 h-4 text-indigo-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="date"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-800/80 bg-slate-950 text-xs focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-400 outline-none text-white font-semibold"
+                />
+              </label>
+              <input
+                type="time"
+                value={dueTime}
+                onChange={(e) => setDueTime(e.target.value)}
+                disabled={!dueDate}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800/80 bg-slate-950 text-xs focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-400 outline-none text-white font-semibold disabled:text-slate-600 disabled:cursor-not-allowed"
+              />
+            </div>
             <p className="text-[10px] text-slate-500 font-bold leading-relaxed">
-              이 시간이 지나도 완료 전이면 목록과 시설관리팀 현황에 지연으로 표시됩니다.
+              선택한 날짜는 Google 캘린더의 할 일 날짜로 전송되고, 시간은 할 일 메모에 함께 기록됩니다. 시간이 지나도 완료 전이면 지연으로 표시됩니다.
             </p>
           </div>
 

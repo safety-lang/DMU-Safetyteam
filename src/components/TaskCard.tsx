@@ -57,7 +57,7 @@ export default function TaskCard({ task, onSelect, onAssigneeAction, isSynced, i
         </div>
         <div className="flex items-center space-x-1.5">
           {isSynced && (
-            <span className="px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-505/20 flex items-center gap-1" title="시설관리팀 공유캘린더 연동됨">
+            <span className="px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-505/20 flex items-center gap-1" title="시설관리팀 Google 할 일 연동됨">
               <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
               G-CAL
             </span>

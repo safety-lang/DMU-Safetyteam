@@ -1,6 +1,6 @@
 # 시설관리 업무 관리 시스템
 
-시설관리팀의 작업지시 발행, 진행 상태 확인, 완료 보고, 소리 알림, 공유캘린더 전송을 관리하는 로컬 웹앱입니다.
+시설관리팀의 작업지시 발행, 진행 상태 확인, 완료 보고, 소리 알림, Google 할 일 전송을 관리하는 로컬 웹앱입니다.
 
 ## 실행 방법
 
@@ -53,16 +53,18 @@ http://내-PC-IP주소:4173/
 
 앱 화면의 `팀원 공용 저장소` 영역에서 `현재 데이터 서버 저장`을 누르면 팀장 PC의 공용 저장소에 저장되고, 다른 팀원은 `서버에서 불러오기`로 같은 데이터를 가져올 수 있습니다. 운영 전에 앱의 `전체 백업` 버튼으로 별도 백업 파일도 저장해 두세요.
 
-## 공유캘린더 연동
+## Google 할 일 연동
 
-이 앱은 Firebase 로그인 없이 Google Apps Script 웹앱을 통해 시설관리팀 공유캘린더에 작업지시 일정을 전송합니다.
+이 앱은 Firebase 로그인 없이 Google Apps Script 웹앱을 통해 `rhs@dongyang.ac.kr` 계정의 `시설관리팀 공유 일정` Google 할 일 목록에 업무지정을 전송합니다. 할 일은 Google 캘린더 화면의 할 일 영역에서 확인합니다.
 
 1. `copy-apps-script-code.cmd`를 두 번 클릭한 뒤 Google Apps Script 프로젝트의 `Code.gs`에 붙여넣습니다.
 2. `copy-apps-script-manifest.cmd`를 두 번 클릭한 뒤 Apps Script의 `appsscript.json`에 붙여넣습니다.
-3. Apps Script를 웹앱으로 배포합니다.
+3. `rhs@dongyang.ac.kr` 계정으로 Apps Script를 웹앱으로 배포합니다. 실행 계정은 `나`로 설정하고 Google Tasks 권한을 승인합니다.
 4. 생성된 `/exec` URL을 앱의 `Apps Script 웹앱 URL` 칸에 저장합니다.
-5. 앱의 `웹앱 확인`을 눌러 `ok: true`와 `calendarAccess: true`가 보이는지 확인합니다.
-6. 작업지시 상세 화면에서 `일정 전송`을 눌러 공유캘린더에 등록되는지 확인합니다.
+5. 앱의 `웹앱 확인`을 눌러 `ok: true`와 `tasksAccess: true`가 보이는지 확인합니다.
+6. 작업지시 상세 화면에서 `할 일 전송`을 눌러 Google 캘린더의 할 일에 등록되는지 확인합니다.
+
+Google Tasks API는 할 일의 날짜만 저장하고 시간은 저장하지 않습니다. 앱에서 선택한 시간은 할 일 메모의 `완료 예정일시`에 함께 기록됩니다.
 
 자세한 배포 절차는 `apps-script/README.md`를 참고하세요.
 
