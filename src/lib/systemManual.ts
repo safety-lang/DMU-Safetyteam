@@ -175,7 +175,8 @@ export const SYSTEM_MANUAL_SECTIONS: ManualSection[] = [
     notes: [
       '중요 작업 전에는 전체 백업을 먼저 내려받는 것이 안전합니다.',
       'Apps Script URL이 바뀌면 앱의 웹앱 URL 칸도 다시 저장해야 합니다.',
-      '웹앱 확인에서 tasksAccess: false가 나오면 Apps Script 고급 서비스의 Google Tasks API와 appsscript.json 권한 설정을 확인합니다.',
+      'Apps Script의 서비스 목록에 Tasks API가 보이지 않아도 괜찮습니다. 이 연동은 appsscript.json 권한과 직접 API 호출 방식으로 작동합니다.',
+      '웹앱 확인에서 tasksAccess: false가 나오면 appsscript.json이 최신 내용으로 저장되었는지, 권한 승인에서 Tasks 권한을 허용했는지 확인합니다.',
       '웹앱 URL이 /exec로 끝나지 않으면 앱에서 전송할 수 없습니다. /dev 주소나 배포 ID만 붙여넣으면 안 됩니다.',
       '물품 요청서 링크는 외부 신청 화면으로 연결되며, 시설관리 앱의 내부 데이터는 변경하지 않습니다.',
     ],

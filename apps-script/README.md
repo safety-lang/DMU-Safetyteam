@@ -42,6 +42,7 @@ Google Tasks API는 할 일의 날짜만 저장하고 시간은 저장하지 않
 
 - 배포 URL이 `/dev`로 끝나면 앱에서 거부됩니다. 반드시 `/exec` URL을 사용해야 합니다.
 - Apps Script를 `rhs@dongyang.ac.kr`이 아닌 다른 계정으로 배포하면 다른 계정의 Google 할 일 목록에 등록될 수 있습니다.
-- `웹앱 확인`에서 `tasksAccess: false`가 보이면 Apps Script의 고급 서비스에서 Google Tasks API가 켜져 있는지, manifest가 반영되었는지 확인합니다.
+- Apps Script의 `서비스 +` 목록에 Tasks API가 보이지 않아도 괜찮습니다. 이 코드는 `appsscript.json` 권한과 직접 API 호출 방식으로 Google 할 일을 등록합니다.
+- `웹앱 확인`에서 `tasksAccess: false`가 보이면 `appsscript.json`이 최신 내용으로 저장되었는지, 권한 승인에서 Tasks 권한을 허용했는지 확인합니다.
 - `WEBHOOK_SECRET`을 설정했다면 앱의 `연동 키`와 값이 정확히 같아야 합니다.
 - 배포 후 코드를 수정했다면 새 버전으로 다시 배포해야 실제 `/exec` URL에 반영됩니다.

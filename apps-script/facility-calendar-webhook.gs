@@ -1,6 +1,7 @@
 const FACILITY_SHARED_CALENDAR_ID = 'c_04b42241eb38f7f266a3bb553557a109b5ec69bdf42888d195c106f7de81f36c@group.calendar.google.com';
 const FACILITY_SHARED_TASKLIST_TITLE = '시설관리팀 공유 일정';
 const TASKLIST_ID_PROPERTY = 'FACILITY_SHARED_TASKLIST_ID';
+const TASKS_API_BASE_URL = 'https://tasks.googleapis.com/tasks/v1';
 const EXPECTED_EXECUTION_ACCOUNT = 'rhs@dongyang.ac.kr';
 const TIME_ZONE = 'Asia/Seoul';
 
@@ -66,7 +67,11 @@ function doPost(e) {
       });
     }
 
-    const googleTask = Tasks.Tasks.insert(buildGoogleTask_(task), taskList.id);
+    const googleTask = fetchTasksApi_(
+      '/lists/' + encodeURIComponent(taskList.id) + '/tasks',
+      'post',
+      buildGoogleTask_(task)
+    );
 
     return jsonResponse({
       ok: true,
@@ -86,7 +91,7 @@ function getOrCreateFacilityTaskList_() {
   const savedTaskListId = properties.getProperty(TASKLIST_ID_PROPERTY);
   if (savedTaskListId) {
     try {
-      return Tasks.Tasklists.get(savedTaskListId);
+      return getTaskListById_(savedTaskListId);
     } catch (error) {
       properties.deleteProperty(TASKLIST_ID_PROPERTY);
     }
@@ -94,7 +99,7 @@ function getOrCreateFacilityTaskList_() {
 
   let pageToken = '';
   do {
-    const result = Tasks.Tasklists.list({
+    const result = fetchTasksApi_('/users/@me/lists', 'get', null, {
       maxResults: 100,
       pageToken: pageToken || undefined,
     });
@@ -108,11 +113,15 @@ function getOrCreateFacilityTaskList_() {
     pageToken = result.nextPageToken || '';
   } while (pageToken);
 
-  const createdTaskList = Tasks.Tasklists.insert({
+  const createdTaskList = fetchTasksApi_('/users/@me/lists', 'post', {
     title: FACILITY_SHARED_TASKLIST_TITLE,
   });
   properties.setProperty(TASKLIST_ID_PROPERTY, createdTaskList.id);
   return createdTaskList;
+}
+
+function getTaskListById_(taskListId) {
+  return fetchTasksApi_('/users/@me/lists/' + encodeURIComponent(taskListId), 'get');
 }
 
 function getExecutionAccount_() {
@@ -134,7 +143,7 @@ function findExistingGoogleTask_(taskListId, taskId) {
   const marker = getTaskMarker_(taskId);
   let pageToken = '';
   do {
-    const result = Tasks.Tasks.list(taskListId, {
+    const result = fetchTasksApi_('/lists/' + encodeURIComponent(taskListId) + '/tasks', 'get', null, {
       maxResults: 100,
       showCompleted: true,
       showDeleted: false,
@@ -151,6 +160,42 @@ function findExistingGoogleTask_(taskListId, taskId) {
   } while (pageToken);
 
   return null;
+}
+
+function fetchTasksApi_(path, method, payload, query) {
+  const url = TASKS_API_BASE_URL + path + buildQuery_(query || {});
+  const options = {
+    method: method,
+    headers: {
+      Authorization: 'Bearer ' + ScriptApp.getOAuthToken(),
+    },
+    muteHttpExceptions: true,
+  };
+
+  if (payload) {
+    options.contentType = 'application/json';
+    options.payload = JSON.stringify(payload);
+  }
+
+  const response = UrlFetchApp.fetch(url, options);
+  const statusCode = response.getResponseCode();
+  const responseText = response.getContentText();
+
+  if (statusCode < 200 || statusCode >= 300) {
+    throw new Error('Google Tasks API 오류(' + statusCode + '): ' + responseText);
+  }
+
+  return responseText ? JSON.parse(responseText) : {};
+}
+
+function buildQuery_(query) {
+  const parts = [];
+  Object.keys(query).forEach(function(key) {
+    const value = query[key];
+    if (value === undefined || value === null || value === '') return;
+    parts.push(encodeURIComponent(key) + '=' + encodeURIComponent(String(value)));
+  });
+  return parts.length > 0 ? '?' + parts.join('&') : '';
 }
 
 function buildGoogleTask_(task) {
