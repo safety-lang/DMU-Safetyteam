@@ -49,8 +49,14 @@ export default function GoogleCalendarSyncPanel({
     return localStorage.getItem(SHARED_CALENDAR_AUTO_SYNC_KEY) === 'true';
   });
 
+  const sanitizeWebAppUrlDraft = (value: string) => {
+    const nextValue = value.trim();
+    if (nextValue.includes('@') && !nextValue.startsWith('http')) return '';
+    return value;
+  };
+
   useEffect(() => {
-    setUrlDraft(webAppUrl);
+    setUrlDraft(isAppsScriptWebAppUrl(webAppUrl) ? webAppUrl : '');
   }, [webAppUrl]);
 
   useEffect(() => {
@@ -60,9 +66,26 @@ export default function GoogleCalendarSyncPanel({
   const hasWebAppUrl = isAppsScriptWebAppUrl(webAppUrl);
   const unsyncedCount = tasks.filter((task) => !syncedTaskIds.includes(task.id)).length;
 
+  const handleClearSettings = () => {
+    setUrlDraft('');
+    setSecretDraft('');
+    onWebAppUrlChange('');
+    onWebhookSecretChange('');
+    addToast('연동 입력값 초기화', '잘못 자동 입력된 이메일과 연동 키를 비웠습니다. Apps Script /exec URL을 다시 붙여넣어 주세요.', '🧹');
+  };
+
   const handleSaveSettings = () => {
-    const nextUrl = urlDraft.trim();
+    const nextUrl = sanitizeWebAppUrlDraft(urlDraft).trim();
     const nextSecret = nextUrl ? secretDraft.trim() : '';
+
+    if (urlDraft.trim() && !nextUrl) {
+      setUrlDraft('');
+      setSecretDraft('');
+      onWebAppUrlChange('');
+      onWebhookSecretChange('');
+      addToast('URL 입력값 초기화', '이메일 주소는 웹앱 URL이 아닙니다. Apps Script 배포 화면의 /exec URL을 붙여넣어 주세요.', '⚠️');
+      return;
+    }
 
     if (nextUrl && !isAppsScriptWebAppUrl(nextUrl)) {
       addToast(
@@ -281,7 +304,7 @@ export default function GoogleCalendarSyncPanel({
                 spellCheck={false}
                 inputMode="url"
                 value={urlDraft}
-                onChange={(event) => setUrlDraft(event.target.value)}
+                onChange={(event) => setUrlDraft(sanitizeWebAppUrlDraft(event.target.value))}
                 placeholder="https://script.google.com/macros/s/.../exec"
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-xs focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-400 outline-none text-white font-semibold"
               />
@@ -304,7 +327,7 @@ export default function GoogleCalendarSyncPanel({
               />
             </label>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-2">
             <button
               type="button"
               onClick={handleSaveSettings}
@@ -312,6 +335,13 @@ export default function GoogleCalendarSyncPanel({
             >
               <Check className="w-4 h-4 text-emerald-400" />
               설정 저장
+            </button>
+            <button
+              type="button"
+              onClick={handleClearSettings}
+              className="px-5 py-3 bg-slate-950 hover:bg-slate-900 text-slate-300 rounded-2xl text-xs font-black border border-slate-700 cursor-pointer"
+            >
+              입력값 초기화
             </button>
             <button
               type="button"
