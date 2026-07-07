@@ -274,7 +274,12 @@ export default function GoogleCalendarSyncPanel({
                 Apps Script 웹앱 URL
               </span>
               <input
-                type="url"
+                type="text"
+                name="facility-apps-script-webhook-url"
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck={false}
+                inputMode="url"
                 value={urlDraft}
                 onChange={(event) => setUrlDraft(event.target.value)}
                 placeholder="https://script.google.com/macros/s/.../exec"
@@ -287,7 +292,11 @@ export default function GoogleCalendarSyncPanel({
                 연동 키
               </span>
               <input
-                type="password"
+                type="text"
+                name="facility-webhook-secret-optional"
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck={false}
                 value={secretDraft}
                 onChange={(event) => setSecretDraft(event.target.value)}
                 placeholder="선택 입력"
