@@ -12,6 +12,10 @@ export interface SharedCalendarSyncResult {
   ok: true;
 }
 
+export function isAppsScriptWebAppUrl(value: string) {
+  return /^https:\/\/script\.google\.com\/(?:macros\/s|a\/macros\/[^/]+\/s)\/.+\/exec$/i.test(value.trim());
+}
+
 export function buildCalendarWebhookPayload(task: Task, secret?: string) {
   return {
     secret: secret || '',
@@ -50,8 +54,8 @@ export async function syncTaskToGoogleCalendar(
     throw new Error('Apps Script 웹앱 URL이 설정되어 있지 않습니다.');
   }
 
-  if (!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/i.test(targetUrl)) {
-    throw new Error('Apps Script 배포 URL은 https://script.google.com/macros/s/.../exec 형식이어야 합니다.');
+  if (!isAppsScriptWebAppUrl(targetUrl)) {
+    throw new Error('Apps Script 배포 URL은 https://script.google.com/macros/s/.../exec 또는 https://script.google.com/a/macros/학교도메인/s/.../exec 형식이어야 합니다.');
   }
 
   await fetch(targetUrl, {

@@ -3,6 +3,7 @@ import {
   FACILITY_SHARED_CALENDAR_ID,
   FACILITY_SHARED_CALENDAR_NAME,
   SHARED_CALENDAR_AUTO_SYNC_KEY,
+  isAppsScriptWebAppUrl,
   syncTaskToGoogleCalendar,
 } from '../lib/googleCalendar';
 import { Task } from '../types';
@@ -63,10 +64,10 @@ export default function GoogleCalendarSyncPanel({
     const nextUrl = urlDraft.trim();
     const nextSecret = secretDraft.trim();
 
-    if (nextUrl && !/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/i.test(nextUrl)) {
+    if (nextUrl && !isAppsScriptWebAppUrl(nextUrl)) {
       addToast(
         'URL 형식 확인',
-        'Apps Script 웹앱 URL은 https://script.google.com/macros/s/.../exec 형식이어야 합니다.',
+        'Apps Script 웹앱 URL은 script.google.com의 /exec 주소여야 합니다. 학교 계정 주소(/a/macros/dongyang.ac.kr/...)도 사용할 수 있습니다.',
         '⚠️'
       );
       return;
@@ -91,10 +92,10 @@ export default function GoogleCalendarSyncPanel({
       return;
     }
 
-    if (!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/i.test(targetUrl)) {
+    if (!isAppsScriptWebAppUrl(targetUrl)) {
       addToast(
         'URL 형식 확인',
-        'Apps Script 웹앱 URL은 https://script.google.com/macros/s/.../exec 형식이어야 합니다.',
+        'Apps Script 웹앱 URL은 script.google.com의 /exec 주소여야 합니다. 학교 계정 주소(/a/macros/dongyang.ac.kr/...)도 사용할 수 있습니다.',
         '⚠️'
       );
       return;
@@ -326,7 +327,7 @@ export default function GoogleCalendarSyncPanel({
             {
               step: '2',
               title: '/exec URL 복사',
-              text: '배포 완료 화면의 웹 앱 URL을 복사합니다. 주소는 반드시 https://script.google.com/macros/s/.../exec 로 끝나야 합니다.',
+              text: '배포 완료 화면의 웹 앱 URL을 복사합니다. 일반 주소와 학교 계정 주소 모두 사용할 수 있지만 반드시 /exec로 끝나야 합니다.',
             },
             {
               step: '3',

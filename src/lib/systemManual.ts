@@ -164,7 +164,7 @@ export const SYSTEM_MANUAL_SECTIONS: ManualSection[] = [
       '관리자 화면의 현재 데이터 서버 저장을 누르면 현재 작성 내용 전체가 팀원 공용 저장소 JSON 파일에 저장됩니다.',
       'Google 할 일 연동은 먼저 rhs@dongyang.ac.kr 계정으로 Google Apps Script에서 facility-calendar-webhook.gs 코드를 웹앱으로 배포해야 합니다.',
       'Apps Script 배포 설정에서 실행 계정은 나(rhs@dongyang.ac.kr)로 선택하고 Google Tasks 권한을 승인합니다.',
-      '배포 완료 화면에서 웹 앱 URL을 복사합니다. 이 주소는 https://script.google.com/macros/s/.../exec 형식이어야 합니다.',
+      '배포 완료 화면에서 웹 앱 URL을 복사합니다. 일반 주소와 학교 계정 주소 모두 사용할 수 있지만 반드시 /exec로 끝나야 합니다.',
       '업무지정 화면 아래의 시설관리팀 공유 일정 할 일 전송 영역에 웹 앱 URL을 붙여넣고 설정 저장을 누릅니다.',
       '연동 키는 Apps Script 속성에 WEBHOOK_SECRET을 설정한 경우에만 입력합니다. 별도로 설정하지 않았다면 비워 둡니다.',
       '웹앱 확인 버튼을 눌러 ok: true와 tasksAccess: true가 보이면 Google 할 일 전송 준비가 된 상태입니다.',

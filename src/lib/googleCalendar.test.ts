@@ -1,4 +1,4 @@
-import { buildCalendarWebhookPayload } from './googleCalendar';
+import { buildCalendarWebhookPayload, isAppsScriptWebAppUrl } from './googleCalendar';
 import type { Task } from '../types';
 
 const assert = (condition: boolean, message: string) => {
@@ -25,5 +25,17 @@ const payload = buildCalendarWebhookPayload(task, 'secret-key');
 assert(payload.secret === 'secret-key', 'webhook secret should be included');
 assert(payload.task.dueDate === task.dueDate, 'task due date should be sent to Apps Script');
 assert(payload.task.title === task.title, 'task title should be preserved');
+assert(
+  isAppsScriptWebAppUrl('https://script.google.com/macros/s/AKfycbx-example/exec'),
+  'standard Apps Script web app URL should be accepted'
+);
+assert(
+  isAppsScriptWebAppUrl('https://script.google.com/a/macros/dongyang.ac.kr/s/AKfycbx-example/exec'),
+  'Google Workspace Apps Script web app URL should be accepted'
+);
+assert(
+  !isAppsScriptWebAppUrl('https://script.google.com/macros/s/AKfycbx-example/dev'),
+  'development Apps Script URL should be rejected'
+);
 
 console.log('google calendar payload tests passed');

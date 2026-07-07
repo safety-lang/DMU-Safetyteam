@@ -26,7 +26,7 @@
 15. 배포 후 생성된 `/exec` URL을 앱의 `Apps Script 웹앱 URL` 입력칸에 저장합니다.
 16. 8번에서 연동 키를 설정했다면 앱의 `연동 키` 입력칸에도 같은 값을 넣습니다.
 
-웹앱 URL은 `https://script.google.com/macros/s/.../exec` 형식이어야 합니다.
+웹앱 URL은 `https://script.google.com/macros/s/.../exec` 형식이거나 학교 계정에서 나오는 `https://script.google.com/a/macros/dongyang.ac.kr/s/.../exec` 형식이어야 합니다.
 
 ## 테스트 방법
 
