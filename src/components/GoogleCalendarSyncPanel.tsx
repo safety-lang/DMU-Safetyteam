@@ -346,12 +346,7 @@ export default function GoogleCalendarSyncPanel({
             <button
               type="button"
               onClick={handleOpenWebApp}
-              disabled={!hasWebAppUrl && !urlDraft.trim()}
-              className={`px-5 py-3 rounded-2xl text-xs font-black border flex items-center justify-center gap-1.5 ${
-                hasWebAppUrl || urlDraft.trim()
-                  ? 'bg-slate-950 hover:bg-slate-900 text-slate-200 border-slate-700 cursor-pointer'
-                  : 'bg-slate-900 text-slate-600 border-slate-800 cursor-not-allowed'
-              }`}
+              className="px-5 py-3 rounded-2xl text-xs font-black border flex items-center justify-center gap-1.5 bg-slate-950 hover:bg-slate-900 text-slate-200 border-slate-700 cursor-pointer"
             >
               <ExternalLink className="w-4 h-4 text-indigo-400" />
               웹앱 확인
