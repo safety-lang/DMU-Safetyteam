@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   FACILITY_SHARED_CALENDAR_ID,
   FACILITY_SHARED_CALENDAR_NAME,
@@ -45,6 +45,7 @@ export default function GoogleCalendarSyncPanel({
   const [secretDraft, setSecretDraft] = useState(webhookSecret);
   const [loading, setLoading] = useState(false);
   const [syncingTaskId, setSyncingTaskId] = useState<string | null>(null);
+  const urlInputRef = useRef<HTMLInputElement>(null);
   const [autoSync, setAutoSync] = useState(() => {
     return localStorage.getItem(SHARED_CALENDAR_AUTO_SYNC_KEY) === 'true';
   });
@@ -54,6 +55,22 @@ export default function GoogleCalendarSyncPanel({
     if (nextValue.includes('@') && !nextValue.startsWith('http')) return '';
     return value;
   };
+
+  useEffect(() => {
+    const clearAutofill = window.setTimeout(() => {
+      const currentValue = urlInputRef.current?.value || '';
+      if (currentValue.includes('@') && !currentValue.startsWith('http')) {
+        if (urlInputRef.current) {
+          urlInputRef.current.value = '';
+        }
+        setUrlDraft('');
+        onWebAppUrlChange('');
+        onWebhookSecretChange('');
+      }
+    }, 250);
+
+    return () => window.clearTimeout(clearAutofill);
+  }, [onWebAppUrlChange, onWebhookSecretChange]);
 
   useEffect(() => {
     setUrlDraft(sanitizeWebAppUrlDraft(webAppUrl));
@@ -297,11 +314,15 @@ export default function GoogleCalendarSyncPanel({
                 Apps Script 웹앱 URL
               </span>
               <input
-                type="text"
+                ref={urlInputRef}
+                type="search"
                 name="facility-apps-script-webhook-url"
                 autoComplete="off"
                 autoCorrect="off"
                 spellCheck={false}
+                data-lpignore="true"
+                data-1p-ignore="true"
+                data-form-type="other"
                 inputMode="url"
                 value={urlDraft}
                 onChange={(event) => setUrlDraft(sanitizeWebAppUrlDraft(event.target.value))}
@@ -315,11 +336,14 @@ export default function GoogleCalendarSyncPanel({
                 연동 키
               </span>
               <input
-                type="text"
+                type="search"
                 name="facility-webhook-secret-optional"
-                autoComplete="off"
+                autoComplete="new-password"
                 autoCorrect="off"
                 spellCheck={false}
+                data-lpignore="true"
+                data-1p-ignore="true"
+                data-form-type="other"
                 value={secretDraft}
                 onChange={(event) => setSecretDraft(event.target.value)}
                 placeholder="선택 입력"

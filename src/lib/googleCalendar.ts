@@ -4,8 +4,8 @@ export const FACILITY_SHARED_CALENDAR_ID =
   'c_04b42241eb38f7f266a3bb553557a109b5ec69bdf42888d195c106f7de81f36c@group.calendar.google.com';
 export const FACILITY_SHARED_CALENDAR_NAME = '시설관리팀 공유 일정 할 일';
 
-export const SHARED_CALENDAR_WEB_APP_URL_KEY = 'fms_shared_calendar_web_app_url';
-export const SHARED_CALENDAR_WEBHOOK_SECRET_KEY = 'fms_shared_calendar_webhook_secret';
+export const SHARED_CALENDAR_WEB_APP_URL_KEY = 'fms_shared_calendar_web_app_url_v2';
+export const SHARED_CALENDAR_WEBHOOK_SECRET_KEY = 'fms_shared_calendar_webhook_secret_v2';
 export const SHARED_CALENDAR_AUTO_SYNC_KEY = 'fms_shared_calendar_auto_sync';
 
 export interface SharedCalendarSyncResult {

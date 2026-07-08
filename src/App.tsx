@@ -80,6 +80,9 @@ const SHARED_CALENDAR_SYNC_STORAGE_KEY = 'fms_google_synced_tasks_facility_share
 const SUPPLY_PURCHASE_REQUEST_URL = 'https://facility-supply-app.vercel.app/request';
 
 const readStoredCalendarWebAppUrl = () => {
+  localStorage.removeItem('fms_shared_calendar_web_app_url');
+  localStorage.removeItem('fms_shared_calendar_webhook_secret');
+
   const savedUrl = localStorage.getItem(SHARED_CALENDAR_WEB_APP_URL_KEY) || '';
   if (!savedUrl || isAppsScriptWebAppUrl(savedUrl)) return savedUrl;
 
