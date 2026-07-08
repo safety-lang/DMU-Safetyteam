@@ -29,6 +29,7 @@ interface GoogleCalendarSyncPanelProps {
   webhookSecret: string;
   onWebAppUrlChange: (value: string) => void;
   onWebhookSecretChange: (value: string) => void;
+  onSettingsSave?: (webAppUrl: string, webhookSecret: string) => void;
 }
 
 export default function GoogleCalendarSyncPanel({
@@ -40,6 +41,7 @@ export default function GoogleCalendarSyncPanel({
   webhookSecret,
   onWebAppUrlChange,
   onWebhookSecretChange,
+  onSettingsSave,
 }: GoogleCalendarSyncPanelProps) {
   const [urlDraft, setUrlDraft] = useState(webAppUrl);
   const [secretDraft, setSecretDraft] = useState(webhookSecret);
@@ -86,8 +88,12 @@ export default function GoogleCalendarSyncPanel({
   const handleClearSettings = () => {
     setUrlDraft('');
     setSecretDraft('');
-    onWebAppUrlChange('');
-    onWebhookSecretChange('');
+    if (onSettingsSave) {
+      onSettingsSave('', '');
+    } else {
+      onWebAppUrlChange('');
+      onWebhookSecretChange('');
+    }
     addToast('연동 입력값 초기화', '잘못 자동 입력된 이메일과 연동 키를 비웠습니다. Apps Script /exec URL을 다시 붙여넣어 주세요.', '🧹');
   };
 
@@ -98,8 +104,12 @@ export default function GoogleCalendarSyncPanel({
     if (urlDraft.trim() && !nextUrl) {
       setUrlDraft('');
       setSecretDraft('');
-      onWebAppUrlChange('');
-      onWebhookSecretChange('');
+      if (onSettingsSave) {
+        onSettingsSave('', '');
+      } else {
+        onWebAppUrlChange('');
+        onWebhookSecretChange('');
+      }
       addToast('URL 입력값 초기화', '이메일 주소는 웹앱 URL이 아닙니다. Apps Script 배포 화면의 /exec URL을 붙여넣어 주세요.', '⚠️');
       return;
     }
@@ -113,8 +123,12 @@ export default function GoogleCalendarSyncPanel({
       return;
     }
 
-    onWebAppUrlChange(nextUrl);
-    onWebhookSecretChange(nextSecret);
+    if (onSettingsSave) {
+      onSettingsSave(nextUrl, nextSecret);
+    } else {
+      onWebAppUrlChange(nextUrl);
+      onWebhookSecretChange(nextSecret);
+    }
     if (!nextUrl) {
       setSecretDraft('');
     }

@@ -411,8 +411,10 @@ export default function App() {
     const nextCalendarWebAppUrl = snapshot.calendarWebAppUrl && isAppsScriptWebAppUrl(snapshot.calendarWebAppUrl)
       ? snapshot.calendarWebAppUrl
       : '';
-    setCalendarWebAppUrl(nextCalendarWebAppUrl);
-    setCalendarWebhookSecret(nextCalendarWebAppUrl ? snapshot.calendarWebhookSecret || '' : '');
+    if (!calendarWebAppUrl && nextCalendarWebAppUrl) {
+      setCalendarWebAppUrl(nextCalendarWebAppUrl);
+      setCalendarWebhookSecret(snapshot.calendarWebhookSecret || '');
+    }
     if (snapshot.facilityUserAccess) {
       facilityAccess.replaceAccessList(snapshot.facilityUserAccess);
     }
@@ -430,7 +432,7 @@ export default function App() {
         setActiveTab('tasks');
       }
     }
-  }, [currentUser.role, facilityAccess]);
+  }, [calendarWebAppUrl, currentUser.role, facilityAccess]);
 
   useEffect(() => {
     if (requiresSupabaseLogin && !isAuthReady) return;
@@ -1776,6 +1778,23 @@ export default function App() {
           webhookSecret={calendarWebhookSecret}
           onWebAppUrlChange={setCalendarWebAppUrl}
           onWebhookSecretChange={setCalendarWebhookSecret}
+          onSettingsSave={(nextWebAppUrl, nextWebhookSecret) => {
+            setCalendarWebAppUrl(nextWebAppUrl);
+            setCalendarWebhookSecret(nextWebhookSecret);
+            persistSharedState(
+              {
+                calendarWebAppUrl: nextWebAppUrl,
+                calendarWebhookSecret: nextWebhookSecret,
+              },
+              {
+                successTitle: 'Google 할 일 연동 저장',
+                successMessage: nextWebAppUrl
+                  ? 'Apps Script 웹앱 URL이 공용 저장소에도 저장되었습니다.'
+                  : 'Apps Script 웹앱 URL 설정을 비웠습니다.',
+                errorTitle: 'Google 할 일 연동 저장 실패',
+              }
+            );
+          }}
         />
           </>
         ) : activeTab === 'dailyLogs' ? (
