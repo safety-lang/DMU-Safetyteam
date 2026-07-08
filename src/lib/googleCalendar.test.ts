@@ -34,6 +34,10 @@ assert(
   'Google Workspace Apps Script web app URL should be accepted'
 );
 assert(
+  isAppsScriptWebAppUrl('https://script.google.com/a/macros/dongyang.ac.kr/s/AKfycbx-example/exec?authuser=0'),
+  'Google Workspace Apps Script web app URL with query should be accepted'
+);
+assert(
   !isAppsScriptWebAppUrl('https://script.google.com/macros/s/AKfycbx-example/dev'),
   'development Apps Script URL should be rejected'
 );

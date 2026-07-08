@@ -56,7 +56,7 @@ export default function GoogleCalendarSyncPanel({
   };
 
   useEffect(() => {
-    setUrlDraft(isAppsScriptWebAppUrl(webAppUrl) ? webAppUrl : '');
+    setUrlDraft(sanitizeWebAppUrlDraft(webAppUrl));
   }, [webAppUrl]);
 
   useEffect(() => {
@@ -111,7 +111,7 @@ export default function GoogleCalendarSyncPanel({
   };
 
   const handleOpenWebApp = () => {
-    const targetUrl = (webAppUrl || urlDraft).trim();
+    const targetUrl = (isAppsScriptWebAppUrl(webAppUrl) ? webAppUrl : urlDraft).trim();
 
     if (!targetUrl) {
       addToast('웹앱 URL 필요', 'Apps Script 웹앱 URL을 먼저 저장해 주세요.', '🔒');

@@ -13,7 +13,20 @@ export interface SharedCalendarSyncResult {
 }
 
 export function isAppsScriptWebAppUrl(value: string) {
-  return /^https:\/\/script\.google\.com\/(?:macros\/s|a\/macros\/[^/]+\/s)\/.+\/exec$/i.test(value.trim());
+  const nextValue = value.trim();
+  if (!nextValue) return false;
+
+  try {
+    const url = new URL(nextValue);
+    return (
+      url.protocol === 'https:' &&
+      url.hostname === 'script.google.com' &&
+      url.pathname.includes('/macros/') &&
+      url.pathname.endsWith('/exec')
+    );
+  } catch {
+    return false;
+  }
 }
 
 export function buildCalendarWebhookPayload(task: Task, secret?: string) {
