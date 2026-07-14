@@ -5,10 +5,13 @@ import {
   ReservationValidationErrors,
 } from './types';
 
-const ACTIVE_RESERVATION_STATUSES = ['pending', 'approved'];
+const ACTIVE_RESERVATION_STATUSES = ['pending', 'approved', 'in_progress'];
 
 export const EMPTY_RESERVATION_FORM: ReservationFormValues = {
   facilityId: '',
+  scheduleKind: '대관',
+  title: '',
+  location: '',
   requesterOrganization: '',
   purpose: '',
   startAt: '',
@@ -28,6 +31,7 @@ export const hasReservationConflict = (
   reservations: FacilityReservation[],
   ignoredReservationId = '',
 ) => reservations.some((reservation) =>
+  Boolean(values.facilityId) &&
   reservation.id !== ignoredReservationId &&
   reservation.facilityId === values.facilityId &&
   ACTIVE_RESERVATION_STATUSES.includes(reservation.status) &&
@@ -46,16 +50,21 @@ export const validateReservationForm = (
   const end = new Date(values.endAt);
   const facility = facilities.find((item) => item.id === values.facilityId);
 
-  if (!values.facilityId) errors.facilityId = '시설을 선택하세요.';
-  if (facility?.status !== '운영중') errors.facilityId = '대관 가능한 시설만 등록할 수 있습니다.';
-  if (!values.requesterOrganization.trim()) errors.requesterOrganization = '대관요청기관을 입력하세요.';
-  if (!values.purpose.trim()) errors.purpose = '대관 목적 및 기타 정보를 입력하세요.';
-  if (!values.startAt || Number.isNaN(start.getTime())) errors.startAt = '시작 시간을 입력하세요.';
-  if (!values.endAt || Number.isNaN(end.getTime())) errors.endAt = '종료 시간을 입력하세요.';
-  if (!errors.startAt && start.getTime() < now.getTime()) errors.startAt = '과거 시간은 대관 일정으로 등록할 수 없습니다.';
-  if (!errors.endAt && !errors.startAt && end.getTime() <= start.getTime()) errors.endAt = '종료 시간은 시작 시간 이후여야 합니다.';
+  if (!values.title.trim()) errors.title = '일정 제목을 입력하세요.';
+  if (values.facilityId && facility?.status !== '운영중') {
+    errors.facilityId = '등록 가능한 시설만 선택할 수 있습니다.';
+  }
+  if (values.scheduleKind === '대관' && !values.requesterOrganization.trim()) {
+    errors.requesterOrganization = '대관요청기관을 입력하세요.';
+  }
+  if (!values.purpose.trim()) errors.purpose = '일정 내용 또는 업무 내용을 입력하세요.';
+  if (!values.startAt || Number.isNaN(start.getTime())) errors.startAt = '시작 일시를 입력하세요.';
+  if (!values.endAt || Number.isNaN(end.getTime())) errors.endAt = '종료 일시를 입력하세요.';
+  if (!errors.endAt && !errors.startAt && end.getTime() <= start.getTime()) {
+    errors.endAt = '종료 일시는 시작 일시 이후여야 합니다.';
+  }
   if (!errors.startAt && !errors.endAt && hasReservationConflict(values, reservations, ignoredReservationId)) {
-    errors.overlap = '동일 시간대에 이미 등록된 대관 일정이 있습니다.';
+    errors.overlap = '동일 시설에 같은 시간대 주요 일정이 이미 있습니다.';
   }
 
   return errors;

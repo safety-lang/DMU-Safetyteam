@@ -56,7 +56,7 @@ export default function FacilityDetailPanel({
       </div>
       <div className={`rounded-2xl border p-4 text-xs font-black flex items-center gap-2 ${reservable ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400' : 'bg-rose-500/10 border-rose-500/25 text-rose-400'}`}>
         <CheckCircle2 className="w-4 h-4" />
-        {reservable ? '대관 일정 등록 가능' : '현재 대관 일정 등록 불가'}
+        {reservable ? '주요 일정 등록 가능' : '현재 주요 일정 등록 불가'}
       </div>
     </div>
   );

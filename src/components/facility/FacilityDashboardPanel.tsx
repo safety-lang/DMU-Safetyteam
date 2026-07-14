@@ -20,14 +20,14 @@ export default function FacilityDashboardPanel({
   return (
     <section className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <MetricCard icon={CalendarDays} label="오늘 대관 일정" value={`${stats.todayReservationCount}건`} tone="indigo" />
+        <MetricCard icon={CalendarDays} label="오늘 주요 일정" value={`${stats.todayReservationCount}건`} tone="indigo" />
         <MetricCard icon={Gauge} label="시설 이용률" value={`${stats.facilityUtilizationRate}%`} tone="emerald" />
         <MetricCard icon={Activity} label="등록 시설" value={`${facilities.length}개`} tone="slate" />
       </div>
       <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-5">
         <h3 className="text-white font-black text-sm flex items-center gap-2 mb-4">
           <BarChart3 className="w-4 h-4 text-indigo-400" />
-          월별 대관 일정 통계
+          월별 주요 일정 통계
         </h3>
         <MonthlyBarChart data={stats.monthlyReservationStats} />
       </div>

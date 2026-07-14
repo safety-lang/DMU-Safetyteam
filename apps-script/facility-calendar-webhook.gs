@@ -53,11 +53,10 @@ function doPost(e) {
 
     const taskList = getOrCreateFacilityTaskList_();
     if (!taskList || !taskList.id) {
-      throw new Error('시설관리팀 공유 일정 할 일 목록을 준비할 수 없습니다. rhs@dongyang.ac.kr 계정과 Google Tasks API 권한을 확인해 주세요.');
+      throw new Error('시설관리팀 공유 일정 할 일 목록을 준비할 수 없습니다. rhs@dongyang.ac.kr 계정과 Google Tasks 권한을 확인해 주세요.');
     }
 
     const existingTask = findExistingGoogleTask_(taskList.id, task.id);
-
     if (existingTask) {
       return jsonResponse({
         ok: true,
@@ -89,6 +88,7 @@ function doPost(e) {
 function getOrCreateFacilityTaskList_() {
   const properties = PropertiesService.getScriptProperties();
   const savedTaskListId = properties.getProperty(TASKLIST_ID_PROPERTY);
+
   if (savedTaskListId) {
     try {
       return getTaskListById_(savedTaskListId);
@@ -104,12 +104,14 @@ function getOrCreateFacilityTaskList_() {
       pageToken: pageToken || undefined,
     });
     const taskLists = result.items || [];
+
     for (let i = 0; i < taskLists.length; i += 1) {
       if (taskLists[i].title === FACILITY_SHARED_TASKLIST_TITLE) {
         properties.setProperty(TASKLIST_ID_PROPERTY, taskLists[i].id);
         return taskLists[i];
       }
     }
+
     pageToken = result.nextPageToken || '';
   } while (pageToken);
 
@@ -142,6 +144,7 @@ function validateSecret_(incomingSecret) {
 function findExistingGoogleTask_(taskListId, taskId) {
   const marker = getTaskMarker_(taskId);
   let pageToken = '';
+
   do {
     const result = fetchTasksApi_('/lists/' + encodeURIComponent(taskListId) + '/tasks', 'get', null, {
       maxResults: 100,
@@ -151,11 +154,13 @@ function findExistingGoogleTask_(taskListId, taskId) {
       pageToken: pageToken || undefined,
     });
     const tasks = result.items || [];
+
     for (let i = 0; i < tasks.length; i += 1) {
       if ((tasks[i].notes || '').indexOf(marker) !== -1) {
         return tasks[i];
       }
     }
+
     pageToken = result.nextPageToken || '';
   } while (pageToken);
 
@@ -223,19 +228,19 @@ function buildDescription_(task) {
     : '';
 
   return [
-    '* DMU 시설관리팀 스마트 업무 지시서',
+    '* DMU 시설관리팀 업무 지정',
     '',
     getTaskMarker_(task.id),
     '- 작업 ID: ' + task.id,
-    '- 분야: ' + (task.category || ''),
+    '- 업무구분: ' + (task.category || ''),
     '- 위치: ' + (task.location || ''),
     '- 담당자: ' + (task.assignee || ''),
     '- 우선순위: ' + (task.priority || ''),
     '- 상태: ' + (task.status || ''),
-    '- 발행일: ' + formatDate_(task.createdAt),
+    '- 등록일: ' + formatDate_(task.createdAt),
     '- 완료 예정일시: ' + formatDate_(task.dueDate),
     '',
-    '■ 작업 설명',
+    '■ 업무 내용',
     task.description || '',
     task.completionReport ? '\n■ 완료 보고\n' + task.completionReport : '',
     task.completionRemarks ? '\n■ 비고\n' + task.completionRemarks : '',

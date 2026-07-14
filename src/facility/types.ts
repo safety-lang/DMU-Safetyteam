@@ -48,12 +48,23 @@ export interface FacilityValidationErrors {
   imageUrl?: string;
 }
 
-export type ReservationStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
+export type MajorScheduleKind = '대관' | '점검' | '행사' | '외부업체' | '법정검사' | '기타';
+
+export type ReservationStatus =
+  | 'pending'
+  | 'approved'
+  | 'rejected'
+  | 'in_progress'
+  | 'completed'
+  | 'cancelled';
 
 export interface FacilityReservation {
   id: string;
   facilityId: string;
   facilityName: string;
+  scheduleKind?: MajorScheduleKind;
+  title?: string;
+  location?: string;
   requesterId: string;
   requesterName: string;
   requesterRole: FacilityRole;
@@ -69,6 +80,9 @@ export interface FacilityReservation {
 
 export interface ReservationFormValues {
   facilityId: string;
+  scheduleKind: MajorScheduleKind;
+  title: string;
+  location: string;
   requesterOrganization: string;
   purpose: string;
   startAt: string;
@@ -77,6 +91,7 @@ export interface ReservationFormValues {
 
 export interface ReservationValidationErrors {
   facilityId?: string;
+  title?: string;
   requesterOrganization?: string;
   purpose?: string;
   startAt?: string;

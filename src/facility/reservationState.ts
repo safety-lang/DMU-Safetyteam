@@ -6,9 +6,12 @@ export interface ReservationActor {
   role: FacilityRole;
 }
 
+const getFacilityName = (values: ReservationFormValues, facility?: Facility) =>
+  facility?.name || values.location.trim() || '-';
+
 export const buildFacilityUsageSchedule = (
   values: ReservationFormValues,
-  facility: Facility,
+  facility: Facility | undefined,
   actor: ReservationActor,
   now = new Date(),
 ): FacilityReservation => {
@@ -16,8 +19,11 @@ export const buildFacilityUsageSchedule = (
 
   return {
     id: `reservation_${now.getTime()}`,
-    facilityId: facility.id,
-    facilityName: facility.name,
+    facilityId: facility?.id || '',
+    facilityName: getFacilityName(values, facility),
+    scheduleKind: values.scheduleKind,
+    title: values.title.trim(),
+    location: values.location.trim(),
     requesterId: actor.id,
     requesterName: actor.name,
     requesterRole: actor.role,
@@ -25,7 +31,7 @@ export const buildFacilityUsageSchedule = (
     purpose: values.purpose.trim(),
     startAt: values.startAt,
     endAt: values.endAt,
-    status: 'approved',
+    status: 'pending',
     createdAt: timestamp,
     updatedAt: timestamp,
   };
@@ -34,17 +40,20 @@ export const buildFacilityUsageSchedule = (
 export const updateFacilityUsageSchedule = (
   reservation: FacilityReservation,
   values: ReservationFormValues,
-  facility: Facility,
+  facility: Facility | undefined,
   now = new Date(),
 ): FacilityReservation => ({
   ...reservation,
-  facilityId: facility.id,
-  facilityName: facility.name,
+  facilityId: facility?.id || '',
+  facilityName: getFacilityName(values, facility),
+  scheduleKind: values.scheduleKind,
+  title: values.title.trim(),
+  location: values.location.trim(),
   requesterOrganization: values.requesterOrganization.trim(),
   purpose: values.purpose.trim(),
   startAt: values.startAt,
   endAt: values.endAt,
-  status: reservation.status === 'cancelled' ? 'approved' : reservation.status,
+  status: reservation.status === 'cancelled' ? 'pending' : reservation.status,
   updatedAt: now.toISOString(),
 });
 

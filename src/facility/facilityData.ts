@@ -40,7 +40,7 @@ export const DEFAULT_FACILITIES: Facility[] = [
     category: '실습실',
     capacity: 24,
     location: '공학관 4층',
-    description: '연구실 안전 점검 대상 시설이며 시설관리팀 확인 후 대관 일정을 등록합니다.',
+    description: '연구실 안전 점검 대상 시설이며 시설관리팀 확인 후 주요 일정을 등록합니다.',
     status: '점검중',
     createdAt: '2026-05-03T09:00:00Z',
     updatedAt: '2026-05-03T09:00:00Z',

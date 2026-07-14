@@ -123,7 +123,7 @@ export default function AdminDataCenter({
     { label: '완료 근무일지', value: completedDailyLogs },
     { label: '업무 완료 목록', value: completedRecords.length },
     { label: '시설', value: module?.facilities.length ?? 0 },
-    { label: '대관 일정', value: module?.reservations.length ?? 0 },
+    { label: '주요 일정', value: module?.reservations.length ?? 0 },
     { label: '자산', value: module?.assets.length ?? 0 },
   ];
 

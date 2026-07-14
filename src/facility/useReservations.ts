@@ -44,10 +44,10 @@ export const useReservations = (actor: ReservationActor) => {
   const pageCount = Math.max(1, Math.ceil(sortedReservations.length / PAGE_SIZE));
   const pageItems = sortedReservations.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const addReservation = (values: ReservationFormValues, facility: Facility) =>
+  const addReservation = (values: ReservationFormValues, facility?: Facility) =>
     setReservations((previous) => [buildFacilityUsageSchedule(values, facility, actor), ...previous]);
 
-  const saveReservation = (id: string, values: ReservationFormValues, facility: Facility) =>
+  const saveReservation = (id: string, values: ReservationFormValues, facility?: Facility) =>
     setReservations((previous) => previous.map((reservation) => (
       reservation.id === id ? updateFacilityUsageSchedule(reservation, values, facility) : reservation
     )));

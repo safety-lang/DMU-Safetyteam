@@ -79,10 +79,6 @@ export default function NewTaskModal({ isOpen, onClose, onSave, users }: NewTask
       setError('업무 제목을 입력하세요.');
       return;
     }
-    if (!location.trim()) {
-      setError('작업 현장 위치를 입력하세요.');
-      return;
-    }
     if (selectedAssignees.length === 0) {
       setError('현장 배정인원을 1명 이상 선택하세요.');
       return;
@@ -251,14 +247,13 @@ export default function NewTaskModal({ isOpen, onClose, onSave, users }: NewTask
           {/* Location */}
           <div className="space-y-1.5">
             <div className="space-y-1.5">
-              <label className="text-[10px] uppercase font-black tracking-widest text-slate-400 block mb-1">시설/위치 <span className="text-rose-500">*</span></label>
+              <label className="text-[10px] uppercase font-black tracking-widest text-slate-400 block mb-1">시설/위치</label>
               <input
                 type="text"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 placeholder="예: 본관 4층 대회의실 B열 주밸브"
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-800/80 bg-slate-950 text-xs focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-400 outline-none text-white font-semibold"
-                required
               />
             </div>
           </div>

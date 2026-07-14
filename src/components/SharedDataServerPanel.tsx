@@ -263,7 +263,7 @@ export default function SharedDataServerPanel({
           {available && (
             <div className="space-y-1 mt-1.5">
               <p className="text-xs text-slate-400 font-bold">
-                저장 데이터: 업무지정 {health?.taskCount ?? 0}건 · 시설 {health?.facilityCount ?? 0}개 · 대관 일정 {health?.reservationCount ?? 0}건
+                저장 데이터: 업무지정 {health?.taskCount ?? 0}건 · 시설 {health?.facilityCount ?? 0}개 · 주요 일정 {health?.reservationCount ?? 0}건
               </p>
               {health?.storagePath && (
                 <p className="text-xs text-emerald-300 font-bold break-all">

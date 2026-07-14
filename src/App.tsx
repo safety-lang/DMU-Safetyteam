@@ -561,7 +561,7 @@ export default function App() {
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
-    addToast('전체 데이터 백업 완료', '업무지정, 셀프 근무일지, 시설, 대관 일정, 점검, 자산 데이터를 백업 파일로 저장했습니다.', '💾');
+    addToast('전체 데이터 백업 완료', '업무지정, 셀프 근무일지, 시설, 주요 일정, 점검, 자산 데이터를 백업 파일로 저장했습니다.', '💾');
   };
 
   const handleImportAppBackup = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -571,7 +571,7 @@ export default function App() {
     if (!file) return;
 
     const confirmed = window.confirm(
-      '백업 파일을 복원하면 현재 브라우저에 저장된 업무지정, 셀프 근무일지, 시설, 대관 일정, 점검, 자산 데이터가 백업 내용으로 바뀝니다. 계속하시겠습니까?'
+      '백업 파일을 복원하면 현재 브라우저에 저장된 업무지정, 셀프 근무일지, 시설, 주요 일정, 점검, 자산 데이터가 백업 내용으로 바뀝니다. 계속하시겠습니까?'
     );
     if (!confirmed) return;
 

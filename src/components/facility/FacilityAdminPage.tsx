@@ -194,8 +194,8 @@ export default function FacilityAdminPage({
     },
     {
       id: 'usage',
-      title: '대관 일정',
-      meta: `${reservations.visibleReservations.length}건`,
+      title: '주요 일정',
+      meta: `${reservations.visibleReservations.length + tasks.length + dailyLogs.length}건`,
       icon: ClipboardList,
     },
   ];
@@ -244,7 +244,7 @@ export default function FacilityAdminPage({
 
   const saveUsageSchedule = (values: ReservationFormValues) => {
     if (!canRegisterUsageSchedule) {
-      addToast('대관 일정 등록 권한 없음', '대관 일정은 시설관리팀 관리자만 등록할 수 있습니다.', '⚠️');
+      addToast('주요 일정 등록 권한 없음', '주요 일정은 시설관리팀 관리자만 등록할 수 있습니다.', '⚠️');
       return;
     }
 
@@ -255,11 +255,21 @@ export default function FacilityAdminPage({
       new Date(),
       editingReservation?.id,
     );
-    const facility = store.facilities.find((item) => item.id === values.facilityId);
-    if (hasReservationErrors(errors) || !facility) {
+    const facility = store.facilities.find((item) => item.id === values.facilityId) || {
+      id: '',
+      name: values.location.trim() || values.title.trim() || '-',
+      category: '강의실' as Facility['category'],
+      capacity: 0,
+      location: values.location.trim(),
+      description: values.purpose.trim(),
+      status: '운영중' as Facility['status'],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    if (hasReservationErrors(errors)) {
       addToast(
-        '대관 일정 등록 실패',
-        errors.overlap || errors.startAt || errors.facilityId || errors.requesterOrganization || errors.purpose || '대관 일정 정보를 확인하세요.',
+        '주요 일정 등록 실패',
+        errors.overlap || errors.startAt || errors.facilityId || errors.requesterOrganization || errors.purpose || '주요 일정 정보를 확인하세요.',
         '⚠️',
       );
       return;
@@ -267,20 +277,20 @@ export default function FacilityAdminPage({
 
     if (editingReservation) {
       reservations.saveReservation(editingReservation.id, values, facility);
-      addToast('대관 일정 수정 완료', `${facility.name} 대관 일정 정보를 수정했습니다.`, '📅');
+      addToast('주요 일정 수정 완료', `${facility.name} 주요 일정 정보를 수정했습니다.`, '📅');
       setEditingReservation(null);
       return;
     }
 
     reservations.addReservation(values, facility);
-    addToast('대관 일정 등록 완료', `${facility.name} 대관 일정이 등록되었습니다.`, '📅');
+    addToast('주요 일정 등록 완료', `${facility.name} 주요 일정이 등록되었습니다.`, '📅');
   };
 
   const changeReservationStatus = (id: string, status: ReservationStatus, reason?: string) => {
     if (!canRegisterUsageSchedule) return;
     reservations.changeStatus(id, status, reason);
     if (editingReservation?.id === id && status === 'cancelled') setEditingReservation(null);
-    addToast('대관 일정 상태 변경', `대관 일정 상태를 ${status} 상태로 변경했습니다.`, '📅');
+    addToast('주요 일정 상태 변경', `주요 일정 상태를 ${status} 상태로 변경했습니다.`, '📅');
   };
 
   const completeInspection = (id: string) => {
@@ -328,7 +338,7 @@ export default function FacilityAdminPage({
             시설 관리 MVP
           </h2>
           <p className="text-xs text-slate-400 mt-1 font-semibold">
-            대관 시설 등록, 검색, 상세 조회, 수정, 삭제와 대관 일정을 한 화면에서 관리합니다.
+            대관 시설과 업무지정, 자기관리 업무, 직접 입력 일정을 주요 일정으로 함께 관리합니다.
           </p>
         </div>
         <div className="px-3.5 py-2 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-black flex items-center gap-2 w-max">
@@ -533,18 +543,17 @@ export default function FacilityAdminPage({
             />
           ) : (
             <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-5 text-xs text-slate-400 font-bold leading-relaxed">
-              대관 일정 등록은 시설관리팀 관리자 권한에서만 가능합니다. 별도 신청 프로그램에서 확정된 내용은 관리자 화면에서 입력합니다.
+              주요 일정 등록은 시설관리팀 관리자 권한에서만 가능합니다. 업무지정과 자기관리 업무는 자동으로 주요 일정에 함께 표시됩니다.
             </div>
           )}
         </div>
         <div className="xl:col-span-8">
           <ReservationListPanel
-            reservations={reservations.pageItems}
+            reservations={reservations.visibleReservations}
             exportReservations={reservations.visibleReservations}
-            page={reservations.page}
-            pageCount={reservations.pageCount}
+            tasks={tasks}
+            dailyLogs={dailyLogs}
             role={role}
-            onPageChange={reservations.setPage}
             onEdit={setEditingReservation}
             onStatusChange={changeReservationStatus}
           />
