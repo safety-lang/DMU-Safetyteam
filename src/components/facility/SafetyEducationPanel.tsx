@@ -40,6 +40,8 @@ interface SafetyEducationPanelProps {
 export default function SafetyEducationPanel({ canEditManagers = false }: SafetyEducationPanelProps) {
   const [records, setRecords] = useState<SafetyEducationRecord[]>(loadRecords);
   const [managerDrafts, setManagerDrafts] = useState<Record<string, string>>({});
+  const [hasPendingChanges, setHasPendingChanges] = useState(false);
+  const [savedAt, setSavedAt] = useState('');
   const reminders = useMemo(() => buildSafetyEducationReminders(records), [records]);
   const activeReminders = reminders.filter((reminder) => reminder.status !== '예정');
   const missingDateCount = records.filter((record) => !record.nextEducationDate).length;
@@ -66,10 +68,6 @@ export default function SafetyEducationPanel({ canEditManagers = false }: Safety
   }, [records]);
 
   useEffect(() => {
-    localStorage.setItem(SAFETY_EDUCATION_STORAGE_KEY, JSON.stringify(records));
-  }, [records]);
-
-  useEffect(() => {
     setManagerDrafts(Object.fromEntries(groupedRecords.map((group) => [
       `${group.category}-${group.manager}`,
       group.manager,
@@ -81,6 +79,7 @@ export default function SafetyEducationPanel({ canEditManagers = false }: Safety
     field: 'completionStatus' | 'nextEducationDate',
     value: string,
   ) => {
+    setHasPendingChanges(true);
     setRecords((previous) =>
       previous.map((record) =>
         record.id === id
@@ -99,12 +98,20 @@ export default function SafetyEducationPanel({ canEditManagers = false }: Safety
   const resetRecords = () => {
     if (!window.confirm('안전관리자 법정교육 현황을 첨부표 기준으로 되돌리시겠습니까?')) return;
     setRecords(DEFAULT_SAFETY_EDUCATION_RECORDS);
+    setHasPendingChanges(true);
+  };
+
+  const saveRecords = () => {
+    localStorage.setItem(SAFETY_EDUCATION_STORAGE_KEY, JSON.stringify(records));
+    setHasPendingChanges(false);
+    setSavedAt(new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }));
   };
 
   const updateGroupManager = (category: string, previousManager: string, nextManager: string) => {
     const trimmedManager = nextManager.trim();
     if (!trimmedManager || trimmedManager === previousManager) return;
 
+    setHasPendingChanges(true);
     setRecords((previous) =>
       previous.map((record) =>
         record.category === category && record.manager === previousManager
@@ -147,6 +154,20 @@ export default function SafetyEducationPanel({ canEditManagers = false }: Safety
             <RotateCcw className="w-3.5 h-3.5" />
             기본표 복원
           </button>
+          <button
+            type="button"
+            onClick={saveRecords}
+            className={`px-3 py-2 rounded-xl border text-[11px] font-black flex items-center gap-1.5 ${
+              hasPendingChanges
+                ? 'bg-emerald-600 text-white border-emerald-400 hover:bg-emerald-500'
+                : 'bg-slate-950 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/10'
+            }`}
+          >
+            변경사항 저장
+          </button>
+          <span className="px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-400 text-[11px] font-black">
+            {hasPendingChanges ? '저장 대기' : savedAt ? `${savedAt} 저장됨` : '저장됨'}
+          </span>
         </div>
       </div>
 
@@ -196,7 +217,7 @@ export default function SafetyEducationPanel({ canEditManagers = false }: Safety
                     <span className="px-2 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[10px] font-black">
                       법정교육 {group.records.length}건
                     </span>
-                    <span className={`inline-flex min-w-[72px] justify-center whitespace-nowrap px-2 py-1 rounded-lg border text-[11px] font-black ${statusTone[groupStatus]}`}>
+                    <span className={`inline-flex min-w-[76px] justify-center whitespace-nowrap px-2 py-1 rounded-lg border text-xs font-bold tracking-normal ${statusTone[groupStatus]}`}>
                       {groupStatus}
                     </span>
                   </div>
@@ -245,7 +266,7 @@ export default function SafetyEducationPanel({ canEditManagers = false }: Safety
 
                         <div>
                           <p className="text-[10px] text-slate-500 font-black mb-1">상태</p>
-                          <span className={`inline-flex min-w-[58px] justify-center whitespace-nowrap px-2 py-1 rounded-lg border text-[11px] font-black ${statusTone[status]}`}>
+                          <span className={`inline-flex min-w-[70px] justify-center whitespace-nowrap px-2 py-1 rounded-lg border text-xs font-bold tracking-normal ${statusTone[status]}`}>
                             {status}
                           </span>
                         </div>
@@ -277,7 +298,7 @@ export default function SafetyEducationPanel({ canEditManagers = false }: Safety
                   <div key={`${reminder.recordId}-${reminder.monthsBefore}`} className="rounded-xl bg-slate-950/70 border border-slate-800 p-3">
                     <div className="flex items-center justify-between gap-2">
                       <p className="text-white text-xs font-black">{reminder.category}</p>
-                      <span className={`px-2 py-0.5 rounded-lg border text-[10px] font-black ${statusTone[reminder.status]}`}>
+                      <span className={`px-2 py-0.5 rounded-lg border text-xs font-bold tracking-normal ${statusTone[reminder.status]}`}>
                         {reminder.status}
                       </span>
                     </div>
