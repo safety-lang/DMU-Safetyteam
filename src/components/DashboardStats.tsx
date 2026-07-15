@@ -1,6 +1,7 @@
-﻿import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { BarChart3, Clock, ShieldAlert } from 'lucide-react';
 import type { FacilityUserAccess } from '../facility/types';
+import { isReadOnlyFacilityUser } from '../facility/userAccessState';
 import { isApprovalPending, isCompletionApproved, isTaskDelayed } from '../lib/taskState';
 import { taskIncludesAssignee } from '../lib/taskAssignees';
 import { Task, UserProfile } from '../types';
@@ -12,6 +13,8 @@ interface DashboardStatsProps {
   currentUserId: string;
   canManageAdminAccess: boolean;
   onAdminAccessChange: (userId: string, isAdmin: boolean) => void;
+  canEditUserProfiles: boolean;
+  onUserProfileChange: (userId: string, updates: Pick<UserProfile, 'name' | 'role'>) => void;
 }
 
 interface StatCardProps {
@@ -48,8 +51,11 @@ export default function DashboardStats({
   currentUserId,
   canManageAdminAccess,
   onAdminAccessChange,
+  canEditUserProfiles,
+  onUserProfileChange,
 }: DashboardStatsProps) {
   const accessByUserId = useMemo(() => new Map(userAccessList.map((item) => [item.userId, item])), [userAccessList]);
+  const [profileDrafts, setProfileDrafts] = useState<Record<string, Pick<UserProfile, 'name' | 'role'>>>({});
   const total = tasks.length;
   const approved = tasks.filter(isCompletionApproved).length;
   const approvalPending = tasks.filter(isApprovalPending).length;
@@ -58,6 +64,13 @@ export default function DashboardStats({
   const urgent = tasks.filter((task) => task.priority === '긴급' && task.status !== '완료').length;
   const completionRate = total > 0 ? Math.round((approved / total) * 100) : 0;
   const adminCount = users.filter((user) => accessByUserId.get(user.id)?.role === 'admin').length;
+
+  useEffect(() => {
+    setProfileDrafts(Object.fromEntries(users.map((user) => [user.id, {
+      name: user.name,
+      role: user.role,
+    }])));
+  }, [users]);
 
   const getUserTaskCount = (userName: string, status?: '대기중' | '진행중' | '완료') =>
     tasks.filter((task) => {
@@ -68,6 +81,26 @@ export default function DashboardStats({
 
   const getUserDelayedTaskCount = (userName: string) =>
     tasks.filter((task) => taskIncludesAssignee(task.assignee, userName) && isTaskDelayed(task)).length;
+
+  const updateProfileDraft = (userId: string, field: 'name' | 'role', value: string) => {
+    setProfileDrafts((previous) => ({
+      ...previous,
+      [userId]: {
+        ...(previous[userId] || { name: '', role: '' }),
+        [field]: value,
+      },
+    }));
+  };
+
+  const commitProfileDraft = (user: UserProfile) => {
+    const draft = profileDrafts[user.id];
+    if (!draft) return;
+
+    const nextName = draft.name.trim();
+    const nextRole = draft.role.trim();
+    if (nextName === user.name && nextRole === user.role) return;
+    onUserProfileChange(user.id, { name: nextName, role: nextRole });
+  };
 
   return (
     <div className="space-y-3 mb-4" id="dashboard-stats-container">
@@ -104,7 +137,7 @@ export default function DashboardStats({
       <section className="bg-slate-900/75 backdrop-blur-md p-5 rounded-3xl border border-slate-700/80 shadow-xl">
         <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
           <h4 className="text-white text-lg font-black tracking-tight">
-            시설관리팀 현황
+            담당자별 업무 진행현황
           </h4>
           <span className="text-xs font-black text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-3 py-1.5 rounded-xl shrink-0">
             {users.length}명 / 관리자 {adminCount}명
@@ -114,6 +147,8 @@ export default function DashboardStats({
           {users.map((user) => {
             const access = accessByUserId.get(user.id);
             const isAdmin = access?.role === 'admin';
+            const isReadOnly = isReadOnlyFacilityUser(user);
+            const profileDraft = profileDrafts[user.id] || { name: user.name, role: user.role };
             const activeCount = getUserTaskCount(user.name, '진행중');
             const completedCount = getUserTaskCount(user.name, '완료');
             const delayedCount = getUserDelayedTaskCount(user.name);
@@ -128,19 +163,53 @@ export default function DashboardStats({
                     <span className="text-2xl shrink-0">{user.avatar}</span>
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5 min-w-0">
-                        <span className="text-base text-white font-black truncate">{user.name}</span>
-                        <span className="text-xs text-slate-300 font-black shrink-0">{user.role}</span>
+                        {canEditUserProfiles ? (
+                          <>
+                            <input
+                              type="text"
+                              value={profileDraft.name}
+                              onChange={(event) => updateProfileDraft(user.id, 'name', event.target.value)}
+                              onBlur={() => commitProfileDraft(user)}
+                              onKeyDown={(event) => {
+                                if (event.key === 'Enter') event.currentTarget.blur();
+                              }}
+                              aria-label={`${user.name} 이름`}
+                              className="min-w-0 w-24 rounded-lg border border-slate-700 bg-slate-950 px-2 py-1 text-base text-white font-black outline-none focus:border-emerald-400"
+                            />
+                            <input
+                              type="text"
+                              value={profileDraft.role}
+                              onChange={(event) => updateProfileDraft(user.id, 'role', event.target.value)}
+                              onBlur={() => commitProfileDraft(user)}
+                              onKeyDown={(event) => {
+                                if (event.key === 'Enter') event.currentTarget.blur();
+                              }}
+                              aria-label={`${user.name} 직책`}
+                              className="w-16 rounded-lg border border-slate-700 bg-slate-950 px-2 py-1 text-xs text-slate-200 font-black outline-none focus:border-emerald-400"
+                            />
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-base text-white font-black truncate">{user.name}</span>
+                            <span className="text-xs text-slate-300 font-black shrink-0">{user.role}</span>
+                          </>
+                        )}
                       </div>
                       <label className="mt-1.5 flex items-center gap-1.5 text-xs text-slate-300 font-black">
                         <input
                           type="checkbox"
                           checked={isAdmin}
-                          disabled={!canManageAdminAccess || user.id === currentUserId}
+                          disabled={!canManageAdminAccess || user.id === currentUserId || isReadOnly}
                           onChange={(event) => onAdminAccessChange(user.id, event.target.checked)}
-                          title={canManageAdminAccess ? '나형석 팀장만 관리자 권한을 변경할 수 있습니다.' : '관리자 지정 권한은 나형석 팀장에게만 있습니다.'}
+                          title={isReadOnly ? '읽기 전용 계정은 관리자 권한을 줄 수 없습니다.' : canManageAdminAccess ? '나형석 팀장만 관리자 권한을 변경할 수 있습니다.' : '관리자 지정 권한은 나형석 팀장에게만 있습니다.'}
                           className="w-4 h-4 accent-indigo-500 disabled:opacity-40"
                         />
                         관리자
+                        {isReadOnly && (
+                          <span className="rounded-md border border-slate-700 bg-slate-900 px-1.5 py-0.5 text-[10px] text-slate-300">
+                            읽기 전용
+                          </span>
+                        )}
                       </label>
                     </div>
                   </div>
@@ -155,7 +224,6 @@ export default function DashboardStats({
           })}
         </div>
       </section>
-
     </div>
   );
 }
@@ -219,5 +287,3 @@ function StatCard({ icon: Icon, label, value, caption, tone }: StatCardProps) {
     </div>
   );
 }
-
-

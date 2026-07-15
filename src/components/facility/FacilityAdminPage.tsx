@@ -373,7 +373,7 @@ export default function FacilityAdminPage({
         />
       )}
 
-      {activeSection === 'safetyEducation' && <SafetyEducationPanel />}
+        {activeSection === 'safetyEducation' && <SafetyEducationPanel canEditManagers={role === 'admin'} />}
 
       {activeSection === 'manual' && <WorkUnitManualPanel definitions={WORK_UNIT_DEFINITIONS} />}
 

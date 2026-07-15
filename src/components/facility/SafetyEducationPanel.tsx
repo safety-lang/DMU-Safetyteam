@@ -33,8 +33,13 @@ const statusTone = {
   '일정 입력 필요': 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30',
 };
 
-export default function SafetyEducationPanel() {
+interface SafetyEducationPanelProps {
+  canEditManagers?: boolean;
+}
+
+export default function SafetyEducationPanel({ canEditManagers = false }: SafetyEducationPanelProps) {
   const [records, setRecords] = useState<SafetyEducationRecord[]>(loadRecords);
+  const [managerDrafts, setManagerDrafts] = useState<Record<string, string>>({});
   const reminders = useMemo(() => buildSafetyEducationReminders(records), [records]);
   const activeReminders = reminders.filter((reminder) => reminder.status !== '예정');
   const missingDateCount = records.filter((record) => !record.nextEducationDate).length;
@@ -64,6 +69,13 @@ export default function SafetyEducationPanel() {
     localStorage.setItem(SAFETY_EDUCATION_STORAGE_KEY, JSON.stringify(records));
   }, [records]);
 
+  useEffect(() => {
+    setManagerDrafts(Object.fromEntries(groupedRecords.map((group) => [
+      `${group.category}-${group.manager}`,
+      group.manager,
+    ])));
+  }, [groupedRecords]);
+
   const updateRecord = (
     id: string,
     field: 'completionStatus' | 'nextEducationDate',
@@ -87,6 +99,19 @@ export default function SafetyEducationPanel() {
   const resetRecords = () => {
     if (!window.confirm('안전관리자 법정교육 현황을 첨부표 기준으로 되돌리시겠습니까?')) return;
     setRecords(DEFAULT_SAFETY_EDUCATION_RECORDS);
+  };
+
+  const updateGroupManager = (category: string, previousManager: string, nextManager: string) => {
+    const trimmedManager = nextManager.trim();
+    if (!trimmedManager || trimmedManager === previousManager) return;
+
+    setRecords((previous) =>
+      previous.map((record) =>
+        record.category === category && record.manager === previousManager
+          ? { ...record, manager: trimmedManager }
+          : record,
+      ),
+    );
   };
 
   return (
@@ -128,6 +153,7 @@ export default function SafetyEducationPanel() {
       <div className="space-y-4">
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
           {groupedRecords.map((group) => {
+            const groupKey = `${group.category}-${group.manager}`;
             const groupStatuses = group.records.map((record) => getEducationDueStatus(record));
             const groupStatus = groupStatuses.includes('지연')
               ? '지연'
@@ -145,7 +171,26 @@ export default function SafetyEducationPanel() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-3 bg-slate-950 border-b border-slate-800">
                   <div>
                     <p className="text-white font-black text-sm">{group.category}</p>
-                    <p className="text-slate-300 text-xs font-bold mt-0.5">관리자: {group.manager}</p>
+                    {canEditManagers ? (
+                      <label className="mt-1 flex items-center gap-2 text-xs text-slate-300 font-bold">
+                        <span className="shrink-0">관리자</span>
+                        <input
+                          type="text"
+                          value={managerDrafts[groupKey] ?? group.manager}
+                          onChange={(event) => setManagerDrafts((previous) => ({
+                            ...previous,
+                            [groupKey]: event.target.value,
+                          }))}
+                          onBlur={() => updateGroupManager(group.category, group.manager, managerDrafts[groupKey] ?? group.manager)}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter') event.currentTarget.blur();
+                          }}
+                          className="w-24 rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-xs text-white outline-none focus:border-emerald-400"
+                        />
+                      </label>
+                    ) : (
+                      <p className="text-slate-300 text-xs font-bold mt-0.5">관리자: {group.manager}</p>
+                    )}
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="px-2 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[10px] font-black">

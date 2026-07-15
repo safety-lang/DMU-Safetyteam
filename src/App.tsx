@@ -35,6 +35,7 @@ import {
   writeFacilityModuleSnapshot,
 } from './facility/facilitySnapshot';
 import { useFacilityUserAccess } from './facility/useFacilityUserAccess';
+import { isReadOnlyFacilityUser } from './facility/userAccessState';
 import { 
   Wrench, 
   Search, 
@@ -105,6 +106,30 @@ const readStoredTasks = () => {
   }
 };
 
+const readStoredUsers = () => {
+  const saved = localStorage.getItem('fms_users');
+  if (!saved) return DEFAULT_USERS;
+
+  try {
+    const parsed = JSON.parse(saved) as unknown;
+    if (!Array.isArray(parsed)) return DEFAULT_USERS;
+
+    return DEFAULT_USERS.map((defaultUser) => ({
+      ...defaultUser,
+      ...((parsed as UserProfile[]).find((user) => user.id === defaultUser.id) || {}),
+    }));
+  } catch {
+    return DEFAULT_USERS;
+  }
+};
+
+const replaceAssigneeName = (assignee: string, oldName: string, newName: string) =>
+  assignee
+    .split(',')
+    .map((name) => (name.trim() === oldName ? newName : name.trim()))
+    .filter(Boolean)
+    .join(', ');
+
 const isFacilityAppState = (value: unknown): value is FacilityAppState => {
   const candidate = value as FacilityAppState;
   return Boolean(
@@ -134,17 +159,22 @@ export default function App() {
     return saved ? JSON.parse(saved) : DEFAULT_NOTIFICATIONS;
   });
 
-  const [users] = useState<UserProfile[]>(DEFAULT_USERS);
-  const [currentUser, setCurrentUser] = useState<UserProfile>(DEFAULT_USERS[0]);
+  const [users, setUsers] = useState<UserProfile[]>(readStoredUsers);
+  const [currentUser, setCurrentUser] = useState<UserProfile>(() => readStoredUsers()[0]);
   const supabaseStateConfig = useMemo(() => getSupabaseStateConfig(), []);
   const requiresSupabaseLogin = supabaseStateConfig.enabled;
   const [isAuthReady, setIsAuthReady] = useState(!requiresSupabaseLogin);
   const [authenticatedEmail, setAuthenticatedEmail] = useState<string | null>(null);
   const facilityAccess = useFacilityUserAccess(users);
   const currentFacilityRole = facilityAccess.getRoleForUser(currentUser);
+  const currentUserIsReadOnly = currentFacilityRole === 'user' || isReadOnlyFacilityUser(currentUser);
   const canManageAdminAccess =
     isPrimaryAdminUser(currentUser, requiresSupabaseLogin ? authenticatedEmail : null) &&
     currentFacilityRole === 'admin';
+
+  useEffect(() => {
+    localStorage.setItem('fms_users', JSON.stringify(users));
+  }, [users]);
   
   // Tab control state
   const [activeTab, setActiveTab] = useState<'tasks' | 'dailyLogs' | 'facilities' | 'adminData'>('facilities');
@@ -302,7 +332,7 @@ export default function App() {
   };
 
   const handleAuthenticatedUser = useCallback((user: UserProfile, email: string) => {
-    setCurrentUser(user);
+    setCurrentUser(users.find((candidate) => candidate.id === user.id) || user);
     setAuthenticatedEmail(email);
     setIsAuthReady(true);
     setSelectedStatus('전체');
@@ -312,12 +342,12 @@ export default function App() {
     if (user.role !== '팀장') {
       setActiveTab('tasks');
     }
-  }, []);
+  }, [users]);
 
   const handleSignOut = () => {
     clearStoredSupabaseAuthSession();
     setAuthenticatedEmail(null);
-    setCurrentUser(DEFAULT_USERS[0]);
+    setCurrentUser(users[0] || DEFAULT_USERS[0]);
     setIsAuthReady(!requiresSupabaseLogin);
     setShowNotifications(false);
     addToast('로그아웃 완료', '다시 사용하려면 직원 이메일과 비밀번호로 로그인해 주세요.', '🔒');
@@ -344,6 +374,7 @@ export default function App() {
     tasks: overrides.tasks ?? tasks,
     notifications: overrides.notifications ?? notifications,
     dailyLogs: overrides.dailyLogs ?? dailyLogs,
+    users: overrides.users ?? users,
     syncedTaskIds: overrides.syncedTaskIds ?? syncedTaskIds,
     calendarWebAppUrl: overrides.calendarWebAppUrl ?? calendarWebAppUrl,
     calendarWebhookSecret: overrides.calendarWebhookSecret ?? calendarWebhookSecret,
@@ -354,6 +385,7 @@ export default function App() {
     tasks,
     notifications,
     dailyLogs,
+    users,
     syncedTaskIds,
     calendarWebAppUrl,
     calendarWebhookSecret,
@@ -407,6 +439,9 @@ export default function App() {
     setTasks(snapshot.tasks.map((task) => ({ ...task, category: normalizeWorkCategory(task.category || '') })));
     setNotifications(snapshot.notifications);
     setDailyLogs(snapshot.dailyLogs);
+    if (Array.isArray(snapshot.users)) {
+      setUsers(snapshot.users);
+    }
     setSyncedTaskIds(Array.isArray(snapshot.syncedTaskIds) ? snapshot.syncedTaskIds : []);
     const nextCalendarWebAppUrl = snapshot.calendarWebAppUrl && isAppsScriptWebAppUrl(snapshot.calendarWebAppUrl)
       ? snapshot.calendarWebAppUrl
@@ -513,6 +548,11 @@ export default function App() {
     }
 
     const target = users.find((user) => user.id === userId);
+    if (target && isReadOnlyFacilityUser(target)) {
+      addToast('권한 변경 제한', `${target.name} ${target.role} 계정은 읽기 전용으로 고정되어 있습니다.`, 'ℹ️');
+      return;
+    }
+
     facilityAccess.changeRole(userId, isAdmin ? 'admin' : 'staff');
     facilityAccess.changeActive(userId, true);
     addToast(
@@ -520,6 +560,80 @@ export default function App() {
       `${target?.name || '선택한 사용자'} 계정을 ${isAdmin ? '관리자' : '일반 팀원'} 권한으로 변경했습니다.`,
       '🛡️'
     );
+  };
+
+  const handleUserProfileChange = (userId: string, updates: Pick<UserProfile, 'name' | 'role'>) => {
+    if (currentFacilityRole !== 'admin') {
+      addToast('담당자 수정 권한 없음', '담당자 이름과 직책은 관리자만 수정할 수 있습니다.', '⚠️');
+      return;
+    }
+
+    const target = users.find((user) => user.id === userId);
+    const nextName = updates.name.trim();
+    const nextRole = updates.role.trim();
+
+    if (!target || !nextName || !nextRole) {
+      addToast('담당자 수정 확인', '이름과 직책을 모두 입력해 주세요.', 'ℹ️');
+      return;
+    }
+
+    const oldName = target.name;
+    const oldRole = target.role;
+    const nextUsers = users.map((user) =>
+      user.id === userId ? { ...user, name: nextName, role: nextRole } : user
+    );
+
+    setUsers(nextUsers);
+    localStorage.setItem('fms_users', JSON.stringify(nextUsers));
+    setCurrentUser((previous) =>
+      previous.id === userId ? { ...previous, name: nextName, role: nextRole } : previous
+    );
+
+    if (oldName !== nextName || oldRole !== nextRole) {
+      const nextTasks = tasks.map((task) => ({
+        ...task,
+        assignee: replaceAssigneeName(task.assignee, oldName, nextName),
+        comments: task.comments.map((comment) => ({
+          ...comment,
+          senderName: comment.senderName === oldName ? nextName : comment.senderName,
+          senderRole: comment.senderName === oldName ? nextRole : comment.senderRole,
+        })),
+        history: task.history.map((history) => ({
+          ...history,
+          user: history.user === oldName ? nextName : history.user,
+        })),
+      }));
+      const nextDailyLogs = dailyLogs.map((log) => ({
+        ...log,
+        employeeName: log.employeeName === oldName ? nextName : log.employeeName,
+        employeeRole: log.employeeName === oldName ? nextRole : log.employeeRole,
+        managerFeedbackList: log.managerFeedbackList.map((comment) => ({
+          ...comment,
+          senderName: comment.senderName === oldName ? nextName : comment.senderName,
+          senderRole: comment.senderName === oldName ? nextRole : comment.senderRole,
+        })),
+      }));
+      const nextNotifications = notifications.map((notification) => ({
+        ...notification,
+        senderName: notification.senderName === oldName ? nextName : notification.senderName,
+        senderRole: notification.senderName === oldName ? nextRole : notification.senderRole,
+        message: notification.message.replaceAll(oldName, nextName),
+      }));
+
+      setTasks(nextTasks);
+      setDailyLogs(nextDailyLogs);
+      setNotifications(nextNotifications);
+      persistSharedState({
+        users: nextUsers,
+        tasks: nextTasks,
+        dailyLogs: nextDailyLogs,
+        notifications: nextNotifications,
+      });
+    } else {
+      persistSharedState({ users: nextUsers });
+    }
+
+    addToast('담당자 정보 수정 완료', `${oldName} 담당자 정보를 ${nextName} ${nextRole}(으)로 변경했습니다.`, '👤', 'success');
   };
 
   const handleExportTasksCsv = () => {
@@ -569,6 +683,10 @@ export default function App() {
     const file = input.files?.[0];
     input.value = '';
     if (!file) return;
+    if (currentUserIsReadOnly) {
+      addToast('읽기 전용 계정', `${currentUser.name} ${currentUser.role} 계정은 백업을 복원할 수 없습니다.`, 'ℹ️');
+      return;
+    }
 
     const confirmed = window.confirm(
       '백업 파일을 복원하면 현재 브라우저에 저장된 업무지정, 셀프 근무일지, 시설, 주요 일정, 점검, 자산 데이터가 백업 내용으로 바뀝니다. 계속하시겠습니까?'
@@ -688,6 +806,12 @@ export default function App() {
 
   // 5. Actions handlers
 
+  const canEditCurrentWork = () => {
+    if (!currentUserIsReadOnly) return true;
+    addToast('읽기 전용 계정', `${currentUser.name} ${currentUser.role} 계정은 내용을 조회할 수만 있습니다.`, 'ℹ️');
+    return false;
+  };
+
   // Profile Swapper Action
   const handleUserChange = (userId: string) => {
     const target = users.find((u) => u.id === userId);
@@ -712,6 +836,8 @@ export default function App() {
     photoUrl?: string;
     dueDate?: string;
   }) => {
+    if (!canEditCurrentWork()) return;
+
     const timestamp = new Date().toISOString();
     const newTask: Task = {
       id: `task_${Date.now()}`,
@@ -801,6 +927,8 @@ export default function App() {
 
   // Update Status Action (접수대기 -> 진행중)
   const handleUpdateStatus = (taskId: string, newStatus: TaskStatus) => {
+    if (!canEditCurrentWork()) return;
+
     const timestamp = new Date().toISOString();
     const targetTask = tasks.find((t) => t.id === taskId);
     if (!targetTask) return;
@@ -862,6 +990,8 @@ export default function App() {
 
   // Submit Completion Report (담당자 -> 완료보고 사진+글)
   const handleSubmitCompletion = (taskId: string, report: string, photoUrl?: string, remarks?: string) => {
+    if (!canEditCurrentWork()) return;
+
     const timestamp = new Date().toISOString();
     const targetTask = tasks.find((t) => t.id === taskId);
     if (!targetTask) return;
@@ -915,6 +1045,8 @@ export default function App() {
   };
 
   const handleAttachTaskPhoto = (taskId: string, target: 'reference' | 'completion', photoUrl: string) => {
+    if (!canEditCurrentWork()) return;
+
     const timestamp = new Date().toISOString();
     const label = target === 'reference' ? '현장 접수 사진' : '조치 완료 사진';
     const updateTask = (task: Task): Task => ({
@@ -942,6 +1074,8 @@ export default function App() {
 
   // Submit Comments / Chats Action
   const handleAddComment = (taskId: string, content: string) => {
+    if (!canEditCurrentWork()) return;
+
     const timestamp = new Date().toISOString();
     const newComment: TaskComment = {
       id: `comment_${Date.now()}`,
@@ -1003,6 +1137,8 @@ export default function App() {
     actionType: 'approve' | 'reject' | 'delete' | 'change_priority' | 'change_assignee',
     payload?: ManagerActionPayload
   ) => {
+    if (!canEditCurrentWork()) return;
+
     const timestamp = new Date().toISOString();
     const targetTask = tasks.find((task) => task.id === taskId);
     if (!targetTask) return;
@@ -1402,6 +1538,8 @@ export default function App() {
           currentUserId={currentUser.id}
           canManageAdminAccess={canManageAdminAccess}
           onAdminAccessChange={handleTeamAdminAccessChange}
+          canEditUserProfiles={currentFacilityRole === 'admin'}
+          onUserProfileChange={handleUserProfileChange}
         />
 
         {/* Navigation Tabs (Work Orders vs. Daily Attendance Logs) */}
@@ -1640,8 +1778,13 @@ export default function App() {
             {/* Manager: Issue task directive trigger */}
             {currentUser.role === '팀장' ? (
               <button
-                onClick={() => setIsNewTaskOpen(true)}
-                className="px-5 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl text-xs font-black shadow-lg shadow-indigo-500/10 cursor-pointer flex items-center justify-center space-x-1.5 border border-indigo-500/30"
+                onClick={() => {
+                  if (canEditCurrentWork()) setIsNewTaskOpen(true);
+                }}
+                disabled={currentUserIsReadOnly}
+                className={`px-5 py-3 text-white rounded-2xl text-xs font-black shadow-lg shadow-indigo-500/10 flex items-center justify-center space-x-1.5 border border-indigo-500/30 ${
+                  currentUserIsReadOnly ? 'bg-slate-800 cursor-not-allowed opacity-60' : 'bg-indigo-600 hover:bg-indigo-500 cursor-pointer'
+                }`}
                 id="issue-task-btn"
               >
                 <Plus className="w-4 h-4" />
@@ -1650,7 +1793,7 @@ export default function App() {
             ) : (
               <div className="text-right text-[10px] text-slate-400 uppercase font-black bg-slate-900 border border-slate-800 rounded-2xl px-4 py-2.5 flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                <span>{currentUser.name} {currentUser.role} 상태 | 셀프 근무일지 기록 가능</span>
+                <span>{currentUser.name} {currentUser.role} 상태 | {currentUserIsReadOnly ? '읽기 전용' : '셀프 근무일지 기록 가능'}</span>
               </div>
             )}
           </div>
@@ -1804,6 +1947,7 @@ export default function App() {
             setDailyLogs={setDailyLogs}
             users={users}
             addToast={addToast}
+            readOnly={currentUserIsReadOnly}
           />
         ) : activeTab === 'adminData' ? (
           <AdminDataCenter

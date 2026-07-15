@@ -96,6 +96,7 @@ export interface FacilityAppState {
   tasks: Task[];
   notifications: TeamNotification[];
   dailyLogs: DailyLog[];
+  users?: UserProfile[];
   syncedTaskIds: string[];
   calendarWebAppUrl: string;
   calendarWebhookSecret: string;

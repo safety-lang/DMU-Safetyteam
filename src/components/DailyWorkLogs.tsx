@@ -26,6 +26,7 @@ interface DailyWorkLogsProps {
   setDailyLogs: React.Dispatch<React.SetStateAction<DailyLog[]>>;
   users: UserProfile[];
   addToast: (title: string, message: string, avatar?: string) => void;
+  readOnly?: boolean;
 }
 
 const getTodayDate = () => new Date().toISOString().slice(0, 10);
@@ -62,6 +63,7 @@ export default function DailyWorkLogs({
   setDailyLogs,
   users,
   addToast,
+  readOnly = false,
 }: DailyWorkLogsProps) {
   const [selectedDate, setSelectedDate] = useState<string>(getTodayDate());
   const [workType, setWorkType] = useState<DailyLogWorkType>(DEFAULT_DAILY_LOG_WORK_TYPE);
@@ -83,6 +85,10 @@ export default function DailyWorkLogs({
 
   const addWorkItem = (event: React.FormEvent) => {
     event.preventDefault();
+    if (readOnly) {
+      addToast('읽기 전용 계정', `${currentUser.name} ${currentUser.role} 계정은 근무일지를 조회할 수만 있습니다.`, 'ℹ️');
+      return;
+    }
     if (!workTitle.trim()) return;
     if (!morningText.trim()) return;
 
@@ -111,6 +117,11 @@ export default function DailyWorkLogs({
   };
 
   const saveResult = (log: DailyLog) => {
+    if (readOnly) {
+      addToast('읽기 전용 계정', `${currentUser.name} ${currentUser.role} 계정은 결과를 저장할 수 없습니다.`, 'ℹ️');
+      return;
+    }
+
     const result = (resultTexts[log.id] ?? log.eveningResult).trim();
     const remarks = (remarkTexts[log.id] ?? log.remarks ?? '').trim();
     if (!result) {
