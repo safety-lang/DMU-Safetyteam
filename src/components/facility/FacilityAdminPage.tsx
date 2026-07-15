@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Activity,
-  Bell,
   BookOpen,
   Boxes,
   Building2,
@@ -19,7 +18,6 @@ import { useFacilities } from '../../facility/useFacilities';
 import { useReservations } from '../../facility/useReservations';
 import { useInspectionSchedules } from '../../facility/useInspectionSchedules';
 import { useFacilityAssets } from '../../facility/useFacilityAssets';
-import { useFacilityNotifications } from '../../facility/useFacilityNotifications';
 import { buildWorkLedgerEntries } from '../../facility/workLedger';
 import { WORK_UNIT_DEFINITIONS } from '../../facility/workUnitData';
 import { hasReservationErrors, validateReservationForm } from '../../facility/reservationValidation';
@@ -52,7 +50,7 @@ import FacilityInspectionSchedulePanel from './FacilityInspectionSchedulePanel';
 import FacilityAssetPanel from './FacilityAssetPanel';
 import ReservationFormPanel from './ReservationFormPanel';
 import ReservationListPanel from './ReservationListPanel';
-import FacilityNotificationPanel from './FacilityNotificationPanel';
+import SafetyEducationPanel from './SafetyEducationPanel';
 import WorkLedgerPanel from './WorkLedgerPanel';
 import WorkUnitManualPanel from './WorkUnitManualPanel';
 
@@ -71,7 +69,7 @@ const roleLabel = {
 };
 
 type FacilityViewMode = 'cards' | 'table';
-type FacilitySectionId = 'summary' | 'notifications' | 'manual' | 'ledger' | 'inspections' | 'assets' | 'facilities' | 'usage';
+type FacilitySectionId = 'summary' | 'safetyEducation' | 'manual' | 'ledger' | 'inspections' | 'assets' | 'facilities' | 'usage';
 
 interface FacilitySectionOption {
   id: FacilitySectionId;
@@ -126,7 +124,6 @@ export default function FacilityAdminPage({
   const reservations = useReservations({ id: currentUser.id, name: currentUser.name, role });
   const inspections = useInspectionSchedules();
   const assets = useFacilityAssets();
-  const notifications = useFacilityNotifications({ id: currentUser.id, role });
   const [selected, setSelected] = useState<Facility | null>(null);
   const [editing, setEditing] = useState<Facility | null>(null);
   const [editingReservation, setEditingReservation] = useState<FacilityReservation | null>(null);
@@ -157,10 +154,10 @@ export default function FacilityAdminPage({
         }]
       : []),
     {
-      id: 'notifications',
-      title: '시설 알림',
-      meta: `읽지 않음 ${notifications.unreadCount}건`,
-      icon: Bell,
+      id: 'safetyEducation',
+      title: '안전관리자 법정교육',
+      meta: '이수현황 · 다음 교육일',
+      icon: ShieldCheck,
     },
     {
       id: 'manual',
@@ -376,14 +373,7 @@ export default function FacilityAdminPage({
         />
       )}
 
-      {activeSection === 'notifications' && (
-        <FacilityNotificationPanel
-          notifications={notifications.visibleNotifications}
-          unreadCount={notifications.unreadCount}
-          onRead={notifications.markAsRead}
-          onReadAll={notifications.markAllAsRead}
-        />
-      )}
+      {activeSection === 'safetyEducation' && <SafetyEducationPanel />}
 
       {activeSection === 'manual' && <WorkUnitManualPanel definitions={WORK_UNIT_DEFINITIONS} />}
 
