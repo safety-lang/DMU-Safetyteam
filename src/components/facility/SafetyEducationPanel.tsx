@@ -101,18 +101,27 @@ export default function SafetyEducationPanel() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        <div className="xl:col-span-2 overflow-x-auto rounded-2xl border border-slate-800 bg-slate-950/60">
-          <table className="w-full min-w-[980px] text-left text-xs">
+      <div className="space-y-4">
+        <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/60">
+          <table className="w-full table-fixed text-left text-[11px]">
+            <colgroup>
+              <col className="w-[13%]" />
+              <col className="w-[8%]" />
+              <col className="w-[9%]" />
+              <col className="w-[18%]" />
+              <col className="w-[19%]" />
+              <col className="w-[19%]" />
+              <col className="w-[14%]" />
+            </colgroup>
             <thead className="bg-slate-950 text-slate-300 border-b border-slate-800">
               <tr>
-                <th className="px-4 py-3 font-black">구분</th>
-                <th className="px-4 py-3 font-black">관리자</th>
-                <th className="px-4 py-3 font-black">법정 교육</th>
-                <th className="px-4 py-3 font-black">교육 주기</th>
-                <th className="px-4 py-3 font-black">이수현황</th>
-                <th className="px-4 py-3 font-black">다음 교육일</th>
-                <th className="px-4 py-3 font-black">상태</th>
+                <th className="px-2.5 py-2 font-black">구분</th>
+                <th className="px-2.5 py-2 font-black">관리자</th>
+                <th className="px-2.5 py-2 font-black">법정 교육</th>
+                <th className="px-2.5 py-2 font-black">교육 주기</th>
+                <th className="px-2.5 py-2 font-black">이수현황</th>
+                <th className="px-2.5 py-2 font-black">다음 교육일</th>
+                <th className="px-2.5 py-2 font-black">상태</th>
               </tr>
             </thead>
             <tbody>
@@ -121,38 +130,38 @@ export default function SafetyEducationPanel() {
 
                 return (
                   <tr key={record.id} className="border-b border-slate-800/80 align-top">
-                    <td className="px-4 py-3 text-white font-black whitespace-nowrap">{record.category}</td>
-                    <td className="px-4 py-3 text-slate-200 font-bold whitespace-nowrap">{record.manager}</td>
-                    <td className="px-4 py-3">
-                      <span className="px-2 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/25 text-indigo-300 font-black">
+                    <td className="px-2.5 py-2 text-white font-black leading-relaxed break-keep">{record.category}</td>
+                    <td className="px-2.5 py-2 text-slate-200 font-bold break-keep">{record.manager}</td>
+                    <td className="px-2.5 py-2">
+                      <span className="inline-flex px-2 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/25 text-indigo-300 font-black leading-tight">
                         {record.trainingType}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-slate-300 font-semibold leading-relaxed min-w-[180px]">{record.cycle}</td>
-                    <td className="px-4 py-3 min-w-[180px]">
+                    <td className="px-2.5 py-2 text-slate-300 font-semibold leading-relaxed break-keep">{record.cycle}</td>
+                    <td className="px-2.5 py-2">
                       <input
                         type="text"
                         value={record.completionStatus}
                         onChange={(event) => updateRecord(record.id, 'completionStatus', event.target.value)}
                         placeholder="이수일 또는 이수기간 입력"
-                        className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none focus:border-emerald-400"
+                        className="w-full min-w-0 px-2.5 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white outline-none focus:border-emerald-400"
                       />
                     </td>
-                    <td className="px-4 py-3 min-w-[190px]">
+                    <td className="px-2.5 py-2">
                       <div className="space-y-1.5">
                         <input
                           type="date"
                           value={record.nextEducationDate}
                           onChange={(event) => updateRecord(record.id, 'nextEducationDate', event.target.value)}
-                          className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none focus:border-emerald-400"
+                          className="w-full min-w-0 px-2.5 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white outline-none focus:border-emerald-400"
                         />
                         <p className="text-[10px] text-slate-500 font-bold">
                           {record.nextEducationDate ? formatDateInputValue(record.nextEducationDate) : record.nextEducationNote || '날짜 입력 필요'}
                         </p>
                       </div>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <span className={`px-2 py-1 rounded-lg border text-[10px] font-black ${statusTone[status]}`}>
+                    <td className="px-2.5 py-2">
+                      <span className={`inline-flex px-2 py-1 rounded-lg border text-[10px] font-black ${statusTone[status]}`}>
                         {status}
                       </span>
                     </td>
@@ -163,7 +172,7 @@ export default function SafetyEducationPanel() {
           </table>
         </div>
 
-        <aside className="space-y-4">
+        <aside className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4">
             <h4 className="text-amber-200 font-black text-sm flex items-center gap-2">
               <BellRing className="w-4 h-4" />
