@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Task } from '../types';
 import { MapPin, Calendar, Clock, AlertTriangle, Paperclip, MessageSquare, CheckSquare } from 'lucide-react';
 import { getTaskStatusLabel, isApprovalPending } from '../lib/taskState';
@@ -163,10 +163,10 @@ export default function TaskCard({ task, onSelect, onAssigneeAction, isSynced, i
               접수대기
             </span>
           )}
-          {statusLabel === '작업중' && (
+          {statusLabel === '진행중' && (
             <span className="px-3.5 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center space-x-1 animate-pulse">
               <Clock className="w-3 h-3 text-amber-400 animate-spin" />
-              <span>작업중</span>
+              <span>진행중</span>
             </span>
           )}
           {statusLabel === '완료' && (
@@ -180,3 +180,4 @@ export default function TaskCard({ task, onSelect, onAssigneeAction, isSynced, i
     </div>
   );
 }
+

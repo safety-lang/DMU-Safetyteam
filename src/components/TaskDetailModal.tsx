@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+﻿import React, { useEffect, useState, useRef } from 'react';
 import { Task, UserProfile, TaskComment, TaskStatus, TaskPriority } from '../types';
 import { X, Send, Camera, Clock, Check, RefreshCw, MessageSquare, History, MapPin, Trash2, ShieldAlert, Calendar } from 'lucide-react';
 import { getTaskStatusLabel, isCompletionApproved as hasCompletionApproval } from '../lib/taskState';
@@ -215,7 +215,7 @@ export default function TaskDetailModal({
               <p className="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap font-semibold">{task.description}</p>
               
               <div className="pt-2.5 border-t border-slate-800/60 flex items-center gap-1.5 text-xs text-slate-400 font-semibold">
-                <span className="font-extrabold text-emerald-300">업무구분:</span>
+                <span className="font-extrabold text-emerald-300">업무분류:</span>
                 <span className="text-slate-300">{task.category}</span>
               </div>
 
@@ -311,8 +311,8 @@ export default function TaskDetailModal({
                     ) : (
                       <div className="text-center px-2">
                         <Camera className="w-5 h-5 text-indigo-400 mx-auto mb-1 animate-pulse" />
-                        <span>작업 조치 보고 대기 수급중</span>
-                        <p className="text-[9px] text-slate-600 mt-1 font-semibold uppercase tracking-widest">기사 소견 작성 필요</p>
+                        <span>조치 내용 입력 대기</span>
+                        <p className="text-[9px] text-slate-600 mt-1 font-semibold">담당자 의견 작성 필요</p>
                       </div>
                     )}
                   </div>
@@ -398,7 +398,7 @@ export default function TaskDetailModal({
                     <div className="font-black text-emerald-300 mb-1">내 담당 업무입니다.</div>
                     현재 상태는 <span className="font-black text-white">{statusLabel}</span>입니다.
                     {task.status === '대기중'
-                      ? ' 먼저 업무를 접수하면 작업중으로 바뀌고, 이후 완료 내용을 입력할 수 있습니다.'
+                      ? ' 먼저 업무를 접수하면 진행중으로 바뀌고, 이후 완료 내용을 입력할 수 있습니다.'
                       : ' 현장에서 처리한 뒤 완료 내용을 저장하면 완료로 바뀝니다.'}
                   </div>
 
@@ -680,3 +680,6 @@ export default function TaskDetailModal({
     </div>
   );
 }
+
+
+

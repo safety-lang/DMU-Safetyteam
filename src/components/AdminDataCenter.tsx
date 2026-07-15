@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import {
   ClipboardList,
   Database,
@@ -455,7 +455,7 @@ export default function AdminDataCenter({
               <thead className="sticky top-0 bg-slate-950 text-slate-300 z-10">
                 <tr className="border-b border-slate-800">
                   <th className="px-4 py-3 font-semibold">출발점</th>
-                  <th className="px-4 py-3 font-semibold">업무구분</th>
+                  <th className="px-4 py-3 font-semibold">업무분류</th>
                   <th className="px-4 py-3 font-semibold">시작일시</th>
                   <th className="px-4 py-3 font-semibold">완료일시</th>
                   <th className="px-4 py-3 font-semibold">제목</th>
@@ -521,3 +521,4 @@ export default function AdminDataCenter({
     </section>
   );
 }
+

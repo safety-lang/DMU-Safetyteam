@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+﻿import React, { useMemo } from 'react';
 import { BarChart3, Clock, ShieldAlert } from 'lucide-react';
 import type { FacilityUserAccess } from '../facility/types';
 import { isApprovalPending, isCompletionApproved, isTaskDelayed } from '../lib/taskState';
@@ -87,7 +87,7 @@ export default function DashboardStats({
         />
         <StatCard
           icon={Clock}
-          label="작업중"
+          label="진행중"
           value={`${inProgress}건`}
           caption="실시간 배정"
           tone="amber"
@@ -96,7 +96,7 @@ export default function DashboardStats({
           icon={BarChart3}
           label="접수대기"
           value={`${pending}건`}
-          caption="신규 오더"
+          caption="신규 업무"
           tone="indigo"
         />
       </section>
@@ -146,7 +146,7 @@ export default function DashboardStats({
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-2 mt-4 font-mono text-xs">
-                  <span className="px-2 py-2 bg-amber-500/15 text-amber-200 rounded-xl font-black text-center border border-amber-500/20">작업중 {activeCount}</span>
+                  <span className="px-2 py-2 bg-amber-500/15 text-amber-200 rounded-xl font-black text-center border border-amber-500/20">진행중 {activeCount}</span>
                   <span className="px-2 py-2 bg-emerald-500/15 text-emerald-200 rounded-xl font-black text-center border border-emerald-500/20">완료 {completedCount}</span>
                   <span className="px-2 py-2 bg-rose-500/15 text-rose-200 rounded-xl font-black text-center border border-rose-500/20">지연 {delayedCount}</span>
                 </div>
@@ -219,3 +219,5 @@ function StatCard({ icon: Icon, label, value, caption, tone }: StatCardProps) {
     </div>
   );
 }
+
+

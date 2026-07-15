@@ -20,6 +20,6 @@ export const isTaskDelayed = (task: Task, now = Date.now()) => {
 export const getTaskStatusLabel = (task: Task) => {
   if (isTaskDelayed(task)) return '지연';
   if (task.status === '완료') return '완료';
-  if (task.status === '진행중') return '작업중';
+  if (task.status === '진행중') return '진행중';
   return '접수대기';
 };

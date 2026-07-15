@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { UserProfile, DailyLog, DailyLogComment } from '../types';
 import {
   AlertCircle,
@@ -401,7 +401,7 @@ export default function DailyWorkLogs({
 
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-400 block">
-                  업무구분 <span className="text-rose-400">*</span>
+                  업무분류 <span className="text-rose-400">*</span>
                 </label>
                 <select
                   value={workType}
@@ -557,3 +557,4 @@ export default function DailyWorkLogs({
     </div>
   );
 }
+

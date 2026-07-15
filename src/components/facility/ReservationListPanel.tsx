@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+﻿import React, { useMemo } from 'react';
 import { CalendarClock, Download, Pencil } from 'lucide-react';
 import {
   buildMajorScheduleItems,
@@ -49,7 +49,7 @@ const buildMajorScheduleCsv = (items: MajorScheduleItem[]) => {
 
 const sourceClass = (source: MajorScheduleItem['source']) => {
   if (source === '업무지정') return 'bg-indigo-500/10 text-indigo-200 border-indigo-500/25';
-  if (source === '자기관리 업무') return 'bg-emerald-500/10 text-emerald-200 border-emerald-500/25';
+  if (source === '셀프 관리 근무일지') return 'bg-emerald-500/10 text-emerald-200 border-emerald-500/25';
   return 'bg-cyan-500/10 text-cyan-200 border-cyan-500/25';
 };
 
@@ -101,7 +101,7 @@ export default function ReservationListPanel({
             주요 일정 현황
           </h3>
           <p className="text-[11px] text-slate-500 font-bold mt-1">
-            업무지정, 자기관리 업무, 직접 등록 일정을 한 화면에서 공유합니다.
+            업무지정, 셀프 관리 근무일지, 직접 등록 일정을 한 화면에서 공유합니다.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -207,3 +207,4 @@ function ReservationStatusSelect({ reservation, onStatusChange }: ReservationSta
     </select>
   );
 }
+

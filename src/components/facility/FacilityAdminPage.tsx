@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Activity,
   BookOpen,
@@ -332,10 +332,10 @@ export default function FacilityAdminPage({
         <div>
           <h2 className="text-white font-black text-lg flex items-center gap-2">
             <Building2 className="w-5 h-5 text-indigo-400" />
-            시설 관리 MVP
+            시설 관리
           </h2>
           <p className="text-xs text-slate-400 mt-1 font-semibold">
-            대관 시설과 업무지정, 자기관리 업무, 직접 입력 일정을 주요 일정으로 함께 관리합니다.
+            대관 시설, 업무지정, 셀프 관리 근무일지, 직접 입력 일정을 주요 일정으로 함께 관리합니다.
           </p>
         </div>
         <div className="px-3.5 py-2 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-black flex items-center gap-2 w-max">
@@ -533,7 +533,7 @@ export default function FacilityAdminPage({
             />
           ) : (
             <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-5 text-xs text-slate-400 font-bold leading-relaxed">
-              주요 일정 등록은 시설관리팀 관리자 권한에서만 가능합니다. 업무지정과 자기관리 업무는 자동으로 주요 일정에 함께 표시됩니다.
+              주요 일정 등록은 시설관리팀 관리자 권한에서만 가능합니다. 업무지정과 셀프 관리 근무일지는 자동으로 주요 일정에 함께 표시됩니다.
             </div>
           )}
         </div>
@@ -554,3 +554,5 @@ export default function FacilityAdminPage({
     </section>
   );
 }
+
+

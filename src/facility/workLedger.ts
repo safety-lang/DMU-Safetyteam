@@ -1,4 +1,4 @@
-import type { DailyLog, Task } from '../types';
+﻿import type { DailyLog, Task } from '../types';
 import { getTaskStatusLabel } from '../lib/taskState';
 import { DEFAULT_DAILY_LOG_WORK_TYPE } from '../lib/dailyLogWorkTypes';
 import { WORK_UNIT_DEFINITIONS, getWorkUnitById } from './workUnitData';
@@ -85,7 +85,7 @@ const dailyLogToEntry = (log: DailyLog): WorkLedgerEntry => {
     unitId: pickWorkUnitId(`${workType} ${log.workTitle || ''} ${log.workLocation || ''} ${log.morningPlan} ${log.eveningResult} ${log.remarks || ''}`),
     status: log.eveningResult ? log.eveningStatus : '오늘 할 일 작성',
     description: [
-      `업무구분: ${workType}`,
+      `업무분류: ${workType}`,
       log.workLocation ? `시설/위치: ${log.workLocation}` : '',
       `업무내용: ${log.morningPlan || '미작성'}`,
       `결과: ${log.eveningResult || '미작성'}`,
@@ -138,3 +138,4 @@ export const buildWorkLedgerEntries = (sources: WorkLedgerSources): WorkLedgerEn
       .filter((schedule) => schedule.status === 'completed')
       .map(inspectionToEntry),
   ].sort((first, second) => new Date(second.date).getTime() - new Date(first.date).getTime());
+

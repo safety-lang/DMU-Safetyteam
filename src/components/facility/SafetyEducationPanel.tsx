@@ -110,8 +110,8 @@ export default function SafetyEducationPanel() {
               <col className="w-[9%]" />
               <col className="w-[18%]" />
               <col className="w-[19%]" />
-              <col className="w-[19%]" />
-              <col className="w-[14%]" />
+              <col className="w-[18%]" />
+              <col className="w-[15%]" />
             </colgroup>
             <thead className="bg-slate-950 text-slate-300 border-b border-slate-800">
               <tr>
@@ -161,7 +161,7 @@ export default function SafetyEducationPanel() {
                       </div>
                     </td>
                     <td className="px-2.5 py-2">
-                      <span className={`inline-flex px-2 py-1 rounded-lg border text-[10px] font-black ${statusTone[status]}`}>
+                      <span className={`inline-flex min-w-[52px] justify-center whitespace-nowrap px-2 py-1 rounded-lg border text-[11px] font-black ${statusTone[status]}`}>
                         {status}
                       </span>
                     </td>

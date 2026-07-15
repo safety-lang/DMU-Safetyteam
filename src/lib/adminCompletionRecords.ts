@@ -1,4 +1,4 @@
-import type { DailyLog, FacilityAppState, Task } from '../types';
+﻿import type { DailyLog, FacilityAppState, Task } from '../types';
 import { DEFAULT_DAILY_LOG_WORK_TYPE } from './dailyLogWorkTypes';
 
 export interface CompletedWorkRecord {
@@ -79,7 +79,7 @@ export const buildCompletedWorkRecords = (snapshot: FacilityAppState): Completed
 };
 
 export const buildCompletedWorkCsv = (records: CompletedWorkRecord[]) => {
-  const headers = ['출발점', '업무구분', '시작일시', '완료일시', '제목', '담당자', '시설/위치', '업무내용'];
+  const headers = ['출발점', '업무분류', '시작일시', '완료일시', '제목', '담당자', '시설/위치', '업무내용'];
   const rows = records.map((record) => [
     record.origin,
     record.workType,
@@ -93,3 +93,4 @@ export const buildCompletedWorkCsv = (records: CompletedWorkRecord[]) => {
 
   return [headers, ...rows].map((row) => row.map(escapeCsvCell).join(',')).join('\n');
 };
+

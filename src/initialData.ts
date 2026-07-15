@@ -1,4 +1,4 @@
-import { Task, UserProfile, TeamNotification, DailyLog } from './types';
+﻿import { Task, UserProfile, TeamNotification, DailyLog } from './types';
 
 export const DEFAULT_USERS: UserProfile[] = [
   {
@@ -127,7 +127,7 @@ export const DEFAULT_TASKS: Task[] = [
         id: 'h2_1',
         timestamp: '2026-05-23T01:45:00Z',
         user: '나형석 (팀장)',
-        action: '요구 기반 냉난방기 민원 해결 오더를 등록하였습니다.'
+        action: '요구 기반 냉난방기 민원 해결 업무를 등록하였습니다.'
       },
       {
         id: 'h2_2',
@@ -163,7 +163,7 @@ export const DEFAULT_TASKS: Task[] = [
         id: 'h3_1',
         timestamp: '2026-05-21T10:00:00Z',
         user: '나형석 (팀장)',
-        action: '신규 건축 영선 보수공사 오더를 등록하였습니다.'
+        action: '신규 건축 영선 보수공사 업무를 등록하였습니다.'
       },
       {
         id: 'h3_2',
@@ -214,7 +214,7 @@ export const DEFAULT_TASKS: Task[] = [
         id: 'c5_1',
         senderName: '오승훈',
         senderRole: '반장',
-        content: '현재 외부 승강기 점검 전문 자문 기사와 주행 케이블 동시 피드백 중입니다. 1층 도어 부분 가이드 하체 손상이 얕게 있어 부싱 세밀 조정 들어갑니다.',
+        content: '현재 외부 승강기 점검 전문 자문 담당자와 주행 케이블 동시 피드백 중입니다. 1층 도어 부분 가이드 하체 손상이 얕게 있어 부싱 세밀 조정 들어갑니다.',
         timestamp: '2026-05-23T07:20:00Z',
       }
     ],
@@ -405,3 +405,5 @@ export const DEFAULT_DAILY_LOGS: DailyLog[] = [
     managerFeedbackList: []
   }
 ];
+
+

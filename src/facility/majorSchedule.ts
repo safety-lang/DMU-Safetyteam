@@ -1,7 +1,7 @@
-import type { DailyLog, Task } from '../types';
+﻿import type { DailyLog, Task } from '../types';
 import type { FacilityReservation, ReservationStatus } from './types';
 
-export type MajorScheduleSource = '업무지정' | '자기관리 업무' | '주요 일정';
+export type MajorScheduleSource = '업무지정' | '셀프 관리 근무일지' | '주요 일정';
 export type MajorScheduleStatus = '예정' | '진행' | '완료' | '지연' | '취소';
 
 export interface MajorScheduleItem {
@@ -106,8 +106,8 @@ const taskToScheduleItem = (task: Task, now: Date): MajorScheduleItem => ({
 
 const dailyLogToScheduleItem = (log: DailyLog, now: Date): MajorScheduleItem => ({
   id: `daily:${log.id}`,
-  source: '자기관리 업무',
-  category: log.workType || '자기관리 업무',
+  source: '셀프 관리 근무일지',
+  category: log.workType || '셀프 관리 근무일지',
   title: log.workTitle || `${log.employeeName} 업무기록`,
   assignee: log.employeeName,
   location: log.workLocation || '-',
@@ -129,3 +129,4 @@ export const buildMajorScheduleItems = (
   ...tasks.map((task) => taskToScheduleItem(task, now)),
   ...dailyLogs.map((log) => dailyLogToScheduleItem(log, now)),
 ].sort((first, second) => toTime(first.dueAt || first.startAt) - toTime(second.dueAt || second.startAt));
+

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+﻿import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Task, UserProfile, TeamNotification, TaskStatus, TaskPriority, TaskComment, DailyLog, FacilityAppState } from './types';
 import { DEFAULT_USERS, DEFAULT_TASKS, DEFAULT_NOTIFICATIONS, DEFAULT_DAILY_LOGS } from './initialData';
 import DashboardStats from './components/DashboardStats';
@@ -523,7 +523,7 @@ export default function App() {
   };
 
   const handleExportTasksCsv = () => {
-    const headers = ['ID', '업무구분', '제목', '상태', '우선순위', '위치', '담당자', '등록일', '완료일', '완료보고'];
+    const headers = ['ID', '업무분류', '제목', '상태', '우선순위', '위치', '담당자', '등록일', '완료일', '완료보고'];
     const rows = filteredTasks.map((task) => [
       task.id,
       task.category,
@@ -799,7 +799,7 @@ export default function App() {
     }
   };
 
-  // Update Status Action (접수대기 -> 작업중)
+  // Update Status Action (접수대기 -> 진행중)
   const handleUpdateStatus = (taskId: string, newStatus: TaskStatus) => {
     const timestamp = new Date().toISOString();
     const targetTask = tasks.find((t) => t.id === taskId);
@@ -814,7 +814,7 @@ export default function App() {
           id: `h_${Date.now()}`,
           timestamp,
           user: `${currentUser.name} (${currentUser.role})`,
-          action: `업무를 접수하고 작업중으로 전환했습니다.`
+          action: `업무를 접수하고 진행중으로 전환했습니다.`
         }
       ];
       return { ...t, status: newStatus, history: updatedHistory };
@@ -838,7 +838,7 @@ export default function App() {
     persistSharedState({ tasks: nextTasks, notifications: nextNotifications });
     addToast(
       '업무 접수 완료',
-      `'${targetTask.title}' 업무를 접수하고 [작업중]으로 전환했습니다.`,
+      `'${targetTask.title}' 업무를 접수하고 [진행중]으로 전환했습니다.`,
       currentUser.avatar,
       'normal'
     );
@@ -860,7 +860,7 @@ export default function App() {
     openTaskDetail(task, true);
   };
 
-  // Submit Completion Report (기사 -> 완료보고 사진+글)
+  // Submit Completion Report (담당자 -> 완료보고 사진+글)
   const handleSubmitCompletion = (taskId: string, report: string, photoUrl?: string, remarks?: string) => {
     const timestamp = new Date().toISOString();
     const targetTask = tasks.find((t) => t.id === taskId);
@@ -1203,7 +1203,7 @@ export default function App() {
                 DMU 시설관리팀
                 <span className="hidden sm:inline-flex bg-indigo-500/10 text-indigo-400 border border-indigo-505/20 font-mono text-[9px] px-2 py-0.5 rounded font-black tracking-widest uppercase">REAL-TIME</span>
               </h1>
-              <p className="text-[10px] text-slate-300 font-black uppercase tracking-widest mt-1">v1.0.4 OPS CENTER COLLABORATION</p>
+              <p className="text-[10px] text-slate-300 font-black tracking-widest mt-1">v1.0.4 시설관리 협업 시스템</p>
             </div>
           </div>
 
@@ -1219,7 +1219,7 @@ export default function App() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
               </span>
-              <span>💡 프로필을 스위칭하여 팀장-기사 간 실시간 완료 승인/알림을 실사 체험하십시오.</span>
+              <span>프로필을 바꿔 팀장과 담당자 간 완료 승인과 알림 흐름을 확인합니다.</span>
             </div>
 
             {/* Browser sound alert controls */}
@@ -1414,7 +1414,7 @@ export default function App() {
                 : 'text-slate-200 hover:text-white hover:bg-slate-800/60'
             }`}
           >
-            🏢 시설 CRUD
+            🏢 시설 관리
           </button>
           <button
             onClick={() => setActiveTab('tasks')}
@@ -1436,7 +1436,7 @@ export default function App() {
           >
             <div className="flex items-center space-x-2 font-sans justify-center text-center">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span>📝 Self-Managed Work Logs</span>
+              <span>📝 셀프 관리 근무일지</span>
             </div>
           </button>
           {currentFacilityRole === 'admin' && (
@@ -1549,7 +1549,7 @@ export default function App() {
             <div className="flex items-center space-x-1.5" id="status-filter-group">
               <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 h-max select-none">진행 상태:</span>
               <div className="bg-slate-950 border border-slate-850 p-1 rounded-xl flex items-center">
-                {['전체', '접수대기', '작업중', '완료', '지연'].map((status) => (
+                {['전체', '접수대기', '진행중', '완료', '지연'].map((status) => (
                   <button
                     key={status}
                     onClick={() => setSelectedStatus(status)}
@@ -1708,7 +1708,7 @@ export default function App() {
                 <thead>
                   <tr className="bg-slate-950/70 border-b border-slate-800 text-slate-400 font-black text-[10px] uppercase tracking-widest select-none">
                     <th className="p-4 w-18">상태</th>
-                    <th className="p-4 w-32">업무구분</th>
+                    <th className="p-4 w-32">업무분류</th>
                     <th className="p-4">업무지정명</th>
                     <th className="p-4 w-40">설비 현장 위치</th>
                     <th className="p-4 w-36">현장 배정인원</th>
@@ -1730,7 +1730,7 @@ export default function App() {
                         <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider ${
                           statusLabel === '지연' ? 'bg-rose-500/10 text-rose-300 border border-rose-500/20' :
                           statusLabel === '완료' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                          statusLabel === '작업중' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse' :
+                          statusLabel === '진행중' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse' :
                           'bg-slate-800 text-slate-400 border border-slate-700'
                         }`}>
                           {statusLabel}
@@ -1832,8 +1832,8 @@ export default function App() {
 
       {/* 6. Page Footer */}
       <footer className="bg-slate-950/20 border-t border-slate-900 mt-20 py-8 text-center select-none shrink-0 text-slate-500 font-semibold text-xs">
-        <p>© 2026 FM COMMAND 스마트 시설관리 시스템. All rights reserved.</p>
-        <p className="text-[10px] text-slate-600 mt-2 font-black uppercase tracking-widest">REAL-TIME FIELD OPS INTEGRATION PLATFORM</p>
+        <p>© 2026 DMU 시설관리팀 스마트 시설관리 시스템. All rights reserved.</p>
+        <p className="text-[10px] text-slate-600 mt-2 font-black tracking-widest">시설관리 업무 기록·일정·자산 통합 관리</p>
       </footer>
 
       {/* 7. Toast Alerts Panel Container */}
@@ -1905,3 +1905,6 @@ export default function App() {
     </div>
   );
 }
+
+
+

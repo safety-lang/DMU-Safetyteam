@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+﻿import React, { useState, useRef } from 'react';
 import { TaskPriority, Task } from '../types';
 import { X, Upload, Check, AlertCircle, CalendarClock } from 'lucide-react';
 import { readTaskImageFile, validateTaskImageFile } from '../lib/taskImage';
@@ -168,7 +168,7 @@ export default function NewTaskModal({ isOpen, onClose, onSave, users }: NewTask
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[10px] uppercase font-black tracking-widest text-slate-400 block mb-1">업무구분 <span className="text-rose-500">*</span></label>
+            <label className="text-[10px] uppercase font-black tracking-widest text-slate-400 block mb-1">업무분류 <span className="text-rose-500">*</span></label>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value as DailyLogWorkType)}
@@ -371,3 +371,4 @@ export default function NewTaskModal({ isOpen, onClose, onSave, users }: NewTask
     </div>
   );
 }
+
