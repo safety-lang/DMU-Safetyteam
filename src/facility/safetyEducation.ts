@@ -213,6 +213,11 @@ export const formatDateInputValue = (value: string) => {
   return `${year}.${month}.${day}. 이전`;
 };
 
+export const hasCompletedAppointmentTraining = (record: SafetyEducationRecord) =>
+  record.trainingType === '선임교육' &&
+  Boolean(record.completionStatus.trim()) &&
+  record.completionStatus.trim() !== '-';
+
 const toDate = (value: string) => {
   if (!value) return null;
   const date = new Date(`${value}T00:00:00`);
@@ -240,6 +245,7 @@ export const getEducationDueStatus = (
   record: SafetyEducationRecord,
   today = toDateInput(new Date()),
 ) => {
+  if (hasCompletedAppointmentTraining(record)) return '완료';
   if (!record.nextEducationDate) return '일정 입력 필요';
   if (compareDateOnly(record.nextEducationDate, today) < 0) return '지연';
   const firstReminder = subtractMonths(record.nextEducationDate, 6);
@@ -252,6 +258,7 @@ export const buildSafetyEducationReminders = (
   today = toDateInput(new Date()),
 ): SafetyEducationReminder[] =>
   records.flatMap((record) => {
+    if (hasCompletedAppointmentTraining(record)) return [];
     if (!record.nextEducationDate) return [];
 
     return SAFETY_EDUCATION_REMINDER_MONTHS.map((monthsBefore) => {

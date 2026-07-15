@@ -26,6 +26,7 @@ const loadRecords = () => {
 };
 
 const statusTone = {
+  완료: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
   예정: 'bg-slate-800 text-slate-300 border-slate-700',
   알림기간: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
   지연: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
