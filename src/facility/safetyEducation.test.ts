@@ -48,13 +48,22 @@ assert(
 );
 
 assert(
-  buildSafetyEducationReminders([pendingAppointment], '2026-01-01').length === 6,
-  'pending appointment training should keep reminder schedule',
+  buildSafetyEducationReminders([pendingAppointment], '2026-01-01').length === 1,
+  'pending appointment training should show only the latest active reminder',
 );
 
 assert(
   getEducationDueStatus(regularTraining, '2026-03-01') === '지연',
   'regular training should still be checked by next education date',
+);
+
+const overdueReminders = buildSafetyEducationReminders([regularTraining], '2026-03-01');
+
+assert(
+  overdueReminders.length === 1 &&
+    overdueReminders[0].status === '지연' &&
+    overdueReminders[0].monthsBefore === 1,
+  'overdue training should show only the final delayed reminder',
 );
 
 console.log('safety education tests passed');

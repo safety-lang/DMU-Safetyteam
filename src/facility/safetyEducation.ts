@@ -261,20 +261,30 @@ export const buildSafetyEducationReminders = (
     if (hasCompletedAppointmentTraining(record)) return [];
     if (!record.nextEducationDate) return [];
 
-    return SAFETY_EDUCATION_REMINDER_MONTHS.map((monthsBefore) => {
-      const reminderDate = subtractMonths(record.nextEducationDate, monthsBefore);
-      const duePassed = compareDateOnly(record.nextEducationDate, today) < 0;
-      const active = compareDateOnly(reminderDate, today) <= 0 && !duePassed;
-
-      return {
-        recordId: record.id,
-        category: record.category,
-        manager: record.manager,
-        trainingType: record.trainingType,
-        monthsBefore,
-        reminderDate,
-        nextEducationDate: record.nextEducationDate,
-        status: duePassed ? '지연' : active ? '알림기간' : '예정',
-      };
+    const makeReminder = (
+      monthsBefore: number,
+      status: SafetyEducationReminder['status'],
+    ): SafetyEducationReminder => ({
+      recordId: record.id,
+      category: record.category,
+      manager: record.manager,
+      trainingType: record.trainingType,
+      monthsBefore,
+      reminderDate: subtractMonths(record.nextEducationDate, monthsBefore),
+      nextEducationDate: record.nextEducationDate,
+      status,
     });
+
+    if (compareDateOnly(record.nextEducationDate, today) < 0) {
+      return [makeReminder(1, '지연')];
+    }
+
+    const latestActiveMonth = SAFETY_EDUCATION_REMINDER_MONTHS
+      .filter((monthsBefore) => {
+        const reminderDate = subtractMonths(record.nextEducationDate, monthsBefore);
+        return reminderDate && compareDateOnly(reminderDate, today) <= 0;
+      })
+      .at(-1);
+
+    return latestActiveMonth ? [makeReminder(latestActiveMonth, '알림기간')] : [];
   });
