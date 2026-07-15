@@ -38,6 +38,27 @@ export default function SafetyEducationPanel() {
   const reminders = useMemo(() => buildSafetyEducationReminders(records), [records]);
   const activeReminders = reminders.filter((reminder) => reminder.status !== '예정');
   const missingDateCount = records.filter((record) => !record.nextEducationDate).length;
+  const groupedRecords = useMemo(() => {
+    const groups = new Map<string, { category: string; manager: string; records: SafetyEducationRecord[] }>();
+
+    records.forEach((record) => {
+      const key = `${record.category}-${record.manager}`;
+      const group = groups.get(key);
+
+      if (group) {
+        group.records.push(record);
+        return;
+      }
+
+      groups.set(key, {
+        category: record.category,
+        manager: record.manager,
+        records: [record],
+      });
+    });
+
+    return Array.from(groups.values());
+  }, [records]);
 
   useEffect(() => {
     localStorage.setItem(SAFETY_EDUCATION_STORAGE_KEY, JSON.stringify(records));
@@ -82,7 +103,10 @@ export default function SafetyEducationPanel() {
         </div>
         <div className="flex flex-wrap gap-2">
           <span className="px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-[11px] font-black">
-            총 {records.length}건
+            관리대상 {groupedRecords.length}건
+          </span>
+          <span className="px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 text-[11px] font-black">
+            법정교육 {records.length}건
           </span>
           <span className="px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[11px] font-black">
             알림/지연 {activeReminders.length}건
@@ -102,74 +126,91 @@ export default function SafetyEducationPanel() {
       </div>
 
       <div className="space-y-4">
-        <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/60">
-          <table className="w-full table-fixed text-left text-[11px]">
-            <colgroup>
-              <col className="w-[13%]" />
-              <col className="w-[8%]" />
-              <col className="w-[9%]" />
-              <col className="w-[18%]" />
-              <col className="w-[19%]" />
-              <col className="w-[18%]" />
-              <col className="w-[15%]" />
-            </colgroup>
-            <thead className="bg-slate-950 text-slate-300 border-b border-slate-800">
-              <tr>
-                <th className="px-2.5 py-2 font-black">구분</th>
-                <th className="px-2.5 py-2 font-black">관리자</th>
-                <th className="px-2.5 py-2 font-black">법정 교육</th>
-                <th className="px-2.5 py-2 font-black">교육 주기</th>
-                <th className="px-2.5 py-2 font-black">이수현황</th>
-                <th className="px-2.5 py-2 font-black">다음 교육일</th>
-                <th className="px-2.5 py-2 font-black">상태</th>
-              </tr>
-            </thead>
-            <tbody>
-              {records.map((record) => {
-                const status = getEducationDueStatus(record);
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+          {groupedRecords.map((group) => {
+            const groupStatuses = group.records.map((record) => getEducationDueStatus(record));
+            const groupStatus = groupStatuses.includes('지연')
+              ? '지연'
+              : groupStatuses.includes('알림기간')
+                ? '알림기간'
+                : groupStatuses.includes('일정 입력 필요')
+                  ? '일정 입력 필요'
+                  : '예정';
 
-                return (
-                  <tr key={record.id} className="border-b border-slate-800/80 align-top">
-                    <td className="px-2.5 py-2 text-white font-black leading-relaxed break-keep">{record.category}</td>
-                    <td className="px-2.5 py-2 text-slate-200 font-bold break-keep">{record.manager}</td>
-                    <td className="px-2.5 py-2">
-                      <span className="inline-flex px-2 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/25 text-indigo-300 font-black leading-tight">
-                        {record.trainingType}
-                      </span>
-                    </td>
-                    <td className="px-2.5 py-2 text-slate-300 font-semibold leading-relaxed break-keep">{record.cycle}</td>
-                    <td className="px-2.5 py-2">
-                      <input
-                        type="text"
-                        value={record.completionStatus}
-                        onChange={(event) => updateRecord(record.id, 'completionStatus', event.target.value)}
-                        placeholder="이수일 또는 이수기간 입력"
-                        className="w-full min-w-0 px-2.5 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white outline-none focus:border-emerald-400"
-                      />
-                    </td>
-                    <td className="px-2.5 py-2">
-                      <div className="space-y-1.5">
-                        <input
-                          type="date"
-                          value={record.nextEducationDate}
-                          onChange={(event) => updateRecord(record.id, 'nextEducationDate', event.target.value)}
-                          className="w-full min-w-0 px-2.5 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white outline-none focus:border-emerald-400"
-                        />
-                        <p className="text-[10px] text-slate-500 font-bold">
-                          {record.nextEducationDate ? formatDateInputValue(record.nextEducationDate) : record.nextEducationNote || '날짜 입력 필요'}
-                        </p>
+            return (
+              <article
+                key={`${group.category}-${group.manager}`}
+                className="rounded-2xl border border-slate-800 bg-slate-950/60 overflow-hidden"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-3 bg-slate-950 border-b border-slate-800">
+                  <div>
+                    <p className="text-white font-black text-sm">{group.category}</p>
+                    <p className="text-slate-300 text-xs font-bold mt-0.5">관리자: {group.manager}</p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="px-2 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[10px] font-black">
+                      법정교육 {group.records.length}건
+                    </span>
+                    <span className={`inline-flex min-w-[72px] justify-center whitespace-nowrap px-2 py-1 rounded-lg border text-[11px] font-black ${statusTone[groupStatus]}`}>
+                      {groupStatus}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="divide-y divide-slate-800/80">
+                  {group.records.map((record) => {
+                    const status = getEducationDueStatus(record);
+
+                    return (
+                      <div key={record.id} className="grid grid-cols-1 lg:grid-cols-[96px_minmax(0,1fr)_minmax(180px,0.9fr)_minmax(190px,0.95fr)_80px] gap-3 px-4 py-3">
+                        <div>
+                          <span className="inline-flex px-2 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/25 text-indigo-300 text-[11px] font-black leading-tight">
+                            {record.trainingType}
+                          </span>
+                        </div>
+
+                        <div>
+                          <p className="text-[10px] text-slate-500 font-black mb-1">교육 주기</p>
+                          <p className="text-xs text-slate-300 font-semibold leading-relaxed break-keep">{record.cycle}</p>
+                        </div>
+
+                        <label className="block">
+                          <span className="text-[10px] text-slate-500 font-black block mb-1">이수현황</span>
+                          <input
+                            type="text"
+                            value={record.completionStatus}
+                            onChange={(event) => updateRecord(record.id, 'completionStatus', event.target.value)}
+                            placeholder="이수일 또는 이수기간 입력"
+                            className="w-full min-w-0 px-2.5 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs outline-none focus:border-emerald-400"
+                          />
+                        </label>
+
+                        <label className="block">
+                          <span className="text-[10px] text-slate-500 font-black block mb-1">다음 교육일</span>
+                          <input
+                            type="date"
+                            value={record.nextEducationDate}
+                            onChange={(event) => updateRecord(record.id, 'nextEducationDate', event.target.value)}
+                            className="w-full min-w-0 px-2.5 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs outline-none focus:border-emerald-400"
+                          />
+                          <p className="text-[10px] text-slate-500 font-bold mt-1">
+                            {record.nextEducationDate ? formatDateInputValue(record.nextEducationDate) : record.nextEducationNote || '날짜 입력 필요'}
+                          </p>
+                        </label>
+
+                        <div>
+                          <p className="text-[10px] text-slate-500 font-black mb-1">상태</p>
+                          <span className={`inline-flex min-w-[58px] justify-center whitespace-nowrap px-2 py-1 rounded-lg border text-[11px] font-black ${statusTone[status]}`}>
+                            {status}
+                          </span>
+                        </div>
                       </div>
-                    </td>
-                    <td className="px-2.5 py-2">
-                      <span className={`inline-flex min-w-[52px] justify-center whitespace-nowrap px-2 py-1 rounded-lg border text-[11px] font-black ${statusTone[status]}`}>
-                        {status}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                    );
+                  })}
+                </div>
+              </article>
+            );
+          })}
         </div>
 
         <aside className="grid grid-cols-1 lg:grid-cols-2 gap-4">
